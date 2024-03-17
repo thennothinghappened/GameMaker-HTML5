@@ -3,6 +3,7 @@
         "allowJs": true,
         "checkJs": true,
         "target": "ESNext",
-        "module": "ESNext"
+        "module": "ESNext",
+        "strict": true
     },
 }

@@ -16,28 +16,23 @@
 // 
 // **********************************************************************************************************************
 
-/**
- * @typedef {Function & {__yy_userFunction: boolean}} yyUserFunction
- * A user-made function
- */
-
 // Native runner types
-var VALUE_REAL= 0;		// Real value
-var VALUE_STRING= 1;		// String value
-var VALUE_ARRAY= 2;		// Array value
-var VALUE_OBJECT = 6;	// YYObjectBase* value 
-var VALUE_INT32= 7;		// Int32 value
-var VALUE_UNDEFINED= 5;	// Undefined value
-var VALUE_PTR= 3;			// Ptr value
-var VALUE_VEC3= 4;		// Vec3 (x,y,z) value (within the RValue)
-var VALUE_VEC4= 8;		// Vec4 (x,y,z,w) value (allocated from pool)
-var VALUE_VEC44= 9;		// Vec44 (matrix) value (allocated from pool)
-var VALUE_INT64= 10;		// Int64 value
-var VALUE_ACCESSOR = 11;	// Actually an accessor
-var VALUE_NULL = 12;	// JS Null
-var VALUE_BOOL = 13;	// Bool value
-var VALUE_ITERATOR = 14;	// JS For-in Iterator
-var VALUE_REF = 15;		// Reference value (uses the ptr to point at a RefBase structure)
+var VALUE_REAL      = 0;		// Real value
+var VALUE_STRING    = 1;		// String value
+var VALUE_ARRAY     = 2;		// Array value
+var VALUE_OBJECT    = 6;	    // YYObjectBase* value 
+var VALUE_INT32     = 7;		// Int32 value
+var VALUE_UNDEFINED = 5;	    // Undefined value
+var VALUE_PTR       = 3;		// Ptr value
+var VALUE_VEC3      = 4;		// Vec3 (x,y,z) value (within the RValue)
+var VALUE_VEC4      = 8;		// Vec4 (x,y,z,w) value (allocated from pool)
+var VALUE_VEC44     = 9;		// Vec44 (matrix) value (allocated from pool)
+var VALUE_INT64     = 10;		// Int64 value
+var VALUE_ACCESSOR  = 11;	    // Actually an accessor
+var VALUE_NULL      = 12;	    // JS Null
+var VALUE_BOOL      = 13;	    // Bool value
+var VALUE_ITERATOR  = 14;	    // JS For-in Iterator
+var VALUE_REF       = 15;		// Reference value (uses the ptr to point at a RefBase structure)
 
 var g_CurrentArrayOwner = 0;
 
@@ -104,7 +99,7 @@ function __yy_gml_array_create( _a )
 }
 
 class GMLObject {
-    
+
     constructor() {
         // do nothing just now
         this.__type = "Object";
@@ -144,43 +139,43 @@ function __yy_gml_object_create( _self, _a )
 }
 
 /**
- * @param {any} a 
+ * @param {any} v 
  * @returns {boolean}
  */
-function is_method(a)
+function is_method(v)
 {
-    if ((a instanceof Function)) {
+    if ((v instanceof Function)) {
         return false;
     }
 
-    if (a.__yy_userFunction === undefined) {
+    if (v.__yy_userFunction === undefined) {
         return false;
     }
 
     return true;
 }
 
-function is_callable( _v )
+function is_callable(v)
 {
-    switch( typeof(_v) )
+    switch( typeof(v) )
     {
         // Is a function so is callable (return true)
         case "function": return true;
         // Is a number try to get the script from it
-        case "number": _v = JSON_game.Scripts[_v - 100000]; break;
+        case "number": v = JSON_game.Scripts[v - 100000]; break;
         // Is a object, check if it is a 'Long' convert it to number and try to get script from it
-        case "object": if (_v instanceof Long) _v = JSON_game.Scripts[_v.toNumber() - 100000]; break;
+        case "object": if (v instanceof Long) v = JSON_game.Scripts[v.toNumber() - 100000]; break;
         // Is not callable (return false)
         default: return false;
     }
 
     // Check if a script was found
-    return _v != undefined;
+    return v != undefined;
 }
 
-function is_handle( _v )
+function is_handle(v)
 {
-    return _v != undefined && _v instanceof YYRef;
+    return v != undefined && v instanceof YYRef;
 }
 
 
@@ -987,33 +982,33 @@ function array_contains_ext(_array, _values, _matchAll, _offset, _length) {
     // Loop through array range
     while (_loops > 0) {
 
-		var matched = false;
+        var matched = false;
         var current = _array[_offset];
-		for (var i = 0; i < subArrayLength; ++i)
-		{
-			if (yyCompareVal(current, _values[i], g_GMLMathEpsilon, false) == 0)
-			{
-				matched = true;
-				matchCount += 1;
-				break;
-			}
-		}
-		// There was a match and any should match; return true
-		if (matched && !_matchAll)
-		{
-			return true;
-		}
+        for (var i = 0; i < subArrayLength; ++i)
+        {
+            if (yyCompareVal(current, _values[i], g_GMLMathEpsilon, false) == 0)
+            {
+                matched = true;
+                matchCount += 1;
+                break;
+            }
+        }
+        // There was a match and any should match; return true
+        if (matched && !_matchAll)
+        {
+            return true;
+        }
 
         // Update index and loops
         _offset += _step;
         _loops--;
     }
 
-	// If match count matches the size of the sub array; return true
-	if (matchCount == subArrayLength)
-	{
-		return true;
-	}
+    // If match count matches the size of the sub array; return true
+    if (matchCount == subArrayLength)
+    {
+        return true;
+    }
 
     return false;
 } // end array_contains_ext
@@ -1473,8 +1468,8 @@ function array_reverse_ext(_array, _offset, _length) {
     var _loops = _itValues[1];
     var _step = _itValues[2];
 
-	// We want to get the start and end index since we will be switching values
-	var _ret = _loops, _startIndex = _offset, _endIndex = _offset + (_loops - 1) * _step;
+    // We want to get the start and end index since we will be switching values
+    var _ret = _loops, _startIndex = _offset, _endIndex = _offset + (_loops - 1) * _step;
 
     // Loop through (half of the) array range
     _loops = Math.floor(_loops * .5);
@@ -1631,8 +1626,8 @@ function variable_WriteValue(_pBuffer, _val) {
 // #############################################################################################
 function isHexdigit(_c) {
     return ((_c >= '0') && (_c <= '9')) ||
-			((_c >= 'A') && (_c <= 'F')) ||
-			((_c >= 'a') && (_c <= 'f'));
+            ((_c >= 'A') && (_c <= 'F')) ||
+            ((_c >= 'a') && (_c <= 'f'));
 
 }
 
@@ -1738,21 +1733,17 @@ function variable_ReadValue(_pBuffer, _version) {
     }
 }
 
-// #############################################################################################
-/// Function:<summary>
-///          	Get the "actual" name of the variable they are trying to access
-///          </summary>
-///
-/// In:		<param name="_name">__gml????__ name</param>
-/// Out:	<returns>
-///				the real name
-///			</returns>
-// #############################################################################################
-function StripGMLName(_name) {
-	return "\""+_name.substr(5, _name.length - 7)+"\"";
+/**
+ * Get the "actual" name of the variable they are trying to access
+ * @param {string} name 
+ * @returns The real name
+ */
+function StripGMLName(name) {
+    return "\""+name.substr(5, name.length - 7)+"\"";
 }
+
 function StripGMLName_NoQuote(_name) {
-	return _name.substr(5, _name.length - 7);
+    return _name.substr(5, _name.length - 7);
 }
 
 /*
@@ -2248,10 +2239,10 @@ function variable_instance_set(_id, _var, _val) {
 
     if (pObj != null && pObj.length > 0)
     {    	
-    	for (var inst = 0; inst < pObj.length; inst++)
-    	{
-			var pInst = pObj[inst];			
-			if (pInst.__yyIsGMLObject || (!pInst.marked && pInst.active)) {
+        for (var inst = 0; inst < pObj.length; inst++)
+        {
+            var pInst = pObj[inst];			
+            if (pInst.__yyIsGMLObject || (!pInst.marked && pInst.active)) {
                 var settings = undefined;
                 if ((typeof g_var2obf !== "undefined") && (g_var2obf[_var] != undefined)) {
                     settings = g_instance_names[g_var2obf[_var]];
@@ -2283,9 +2274,9 @@ function variable_instance_set(_id, _var, _val) {
                         pInst[ _var ] = _val;
                     } // end else
                 } // end if
-			    return;
-			} 
-    	}
+                return;
+            } 
+        }
     }
 }
 

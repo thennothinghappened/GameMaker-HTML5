@@ -17,7 +17,7 @@ module.exports = {
         "no-undef" : 1,
         'no-unused-vars': 1,
         'no-prototype-builtins': 0,
-        'no-mixed-spaces-and-tabs': 0,
+        'no-mixed-spaces-and-tabs': 1,
         'no-extra-semi': 1,
         'no-fallthrough': 1,
         'no-redeclare': 1,
