@@ -16,6 +16,11 @@
 // 
 // **********************************************************************************************************************
 
+/**
+ * @typedef {Function & {__yy_userFunction: boolean}} yyUserFunction
+ * A user-made function
+ */
+
 // Native runner types
 var VALUE_REAL= 0;		// Real value
 var VALUE_STRING= 1;		// String value
@@ -48,57 +53,12 @@ var g_CurrentArrayOwner = 0;
 ///			</returns>
 // #############################################################################################
 /** @constructor */
-function    yyArray( _pName )
-{
-    this.__type = "[Array]";
-    this.m_pName = _pName;
-    this.m_array = [];
-}
-
-function array_get_2D( _a, _d1, _d2 )
-{
-    _d1 = yyGetInt32(_d1);
-    _d2 = yyGetInt32(_d2);
-
-    if (!(_a instanceof Array)) yyError("array_get_2D() : argument 0 must be an array");
-    if (typeof _d1 != "number") yyError( "array_get_2D() : index 1 must be a number" );
-    if (typeof _d2 != "number") yyError( "array_get_2D() : index 2 must be a number" );
-    if ((_d1 < 0) || (_d1 >= _a.length)) yyError( "array_get_2D() : index 1 out of range" );
-    if (!(_a[_d1] instanceof Array)) yyError( "array_get_2D() : second dimension is not an array" );
-    if ((_d2 < 0) || (_d2 >= _a[_d1].length)) yyError( "array_get_2D() : index 2 out of range" );
-    return _a[_d1][_d2];
-}
-
-function array_set_2D( _a, _d1, _d2, _v )
-{
-    if (!(_a instanceof Array)) yyError( "array_set_2D() : argument 0 must be an array" );
-    if (typeof _d1 != "number") yyError( "array_set_2D() : index 1 must be a number" );
-    if (typeof _d2 != "number") yyError( "array_set_2D() : index 2 must be a number" );
-    if (!(_a[_d1] instanceof Array)) _a[_d1] = [];
-    _a[_d1][_d2] = _v;
-}
-
-function array_set_2D_pre( _a, _d1, _d2, _v )
-{
-    _d1 = yyGetInt32(_d1);
-    _d2 = yyGetInt32(_d2);
-
-    if (!(_a instanceof Array)) yyError( "array_set_2D_pre() : argument 0 must be an array" );
-    if (!(_a[_d1] instanceof Array)) _a[_d1] = [];
-    _a[_d1][_d2] = _v;
-    return _v;
-}
-
-function array_set_2D_post( _a, _d1, _d2, _v )
-{
-    _d1 = yyGetInt32(_d1);
-    _d2 = yyGetInt32(_d2);
-
-    if (!(_a instanceof Array)) yyError( "array_set_2D_post() : argument 0 must be an array" );
-    if (!(_a[_d1] instanceof Array)) _a[_d1] = [];
-    var ret = _a[_d1][_d2];
-    _a[_d1][_d2] = _v;
-    return ret;
+class yyArray {
+    constructor(_pName) {
+        this.__type = "[Array]";
+        this.m_pName = _pName;
+        this.m_array = [];
+    }
 }
 
 function array_get( _a, _d1 )
@@ -143,22 +103,22 @@ function __yy_gml_array_create( _a )
     return _a;
 }
 
-function GMLObject()
-{    
-    // do nothing just now
-    this.__type = "Object";
-    this.__yyIsGMLObject = true;
-} // end GMLObject
+class GMLObject {
+    
+    constructor() {
+        // do nothing just now
+        this.__type = "Object";
+        this.__yyIsGMLObject = true;
+    }
 
-GMLObject.prototype.toString = function () {
-    return yyGetString(this);
-};
+    toString() {
+        return yyGetString(this);
+    }
 
-GMLObject.prototype.SetImageIndexGML = function(_frame) 
-{ 
-    this.image_index = _frame; 
-};
-
+    SetImageIndexGML(_frame) {
+        this.image_index = _frame;
+    }
+}
 
 function __yy_gml_object_create( _self, _a )
 {
@@ -183,9 +143,21 @@ function __yy_gml_object_create( _self, _a )
     return r;
 }
 
-function is_method( _a )
+/**
+ * @param {any} a 
+ * @returns {boolean}
+ */
+function is_method(a)
 {
-    return (_a instanceof Function) && (typeof _a.__yy_userFunction !== 'undefined');   
+    if ((a instanceof Function)) {
+        return false;
+    }
+
+    if (a.__yy_userFunction === undefined) {
+        return false;
+    }
+
+    return true;
 }
 
 function is_callable( _v )
@@ -257,26 +229,31 @@ function __yy_method( _inst, _func )
     return ret;
 }
 
-function method( _inst, _func )
+/**
+ * @param {*} struct_ref_or_instance_id 
+ * @param {yyUserFunction|number} func 
+ * @returns 
+ */
+function method(struct_ref_or_instance_id, func)
 {
-    if (typeof _func === "number")
+    if (typeof func === "number")
     {
-        _func = JSON_game.Scripts[_func - 100000];
+        func = JSON_game.Scripts[func - 100000];
+    }
+    
+    if ((typeof struct_ref_or_instance_id == "number") || (struct_ref_or_instance_id instanceof YYRef))
+    {
+        struct_ref_or_instance_id = yyInst(null, null, struct_ref_or_instance_id);
     }
 
-    if ((typeof _inst == "number") || (_inst instanceof YYRef))
-    {
-        _inst = yyInst(null, null, _inst);
-    }
-
-    if (!(_func instanceof Function)) yyError("method : argument needs to be a function");
-    if (_func.__yy_userFunction) {
-        _func = _func.origfunc ? _func.origfunc : _func;
-        var ret = _func;
-        if ((_inst == undefined) || (_inst == null)) {
-            ret = _func.bind(_inst);
+    if (!(func instanceof Function)) yyError("method : argument needs to be a function");
+    if (func.__yy_userFunction) {
+        func = func.origfunc ? func.origfunc : func;
+        var ret = func;
+        if ((struct_ref_or_instance_id == undefined) || (struct_ref_or_instance_id == null)) {
+            ret = func.bind(struct_ref_or_instance_id);
         } else {
-            var a = { func : _func, inst : _inst };
+            var a = { func : func, inst : struct_ref_or_instance_id };
             var newfunc = function() {
                 var newArgs = Array.prototype.slice.call(arguments);
                 newArgs[0] = this.inst;
@@ -284,22 +261,22 @@ function method( _inst, _func )
             };        
             ret = newfunc.bind(a);
         }
-        ret.boundObject = _inst;
-        ret.origfunc = _func.origfunc === undefined ? _func : _func.origfunc;           // in case we want to use the method with a different "this"
+        ret.boundObject = struct_ref_or_instance_id;
+        ret.origfunc = func.origfunc === undefined ? func : func.origfunc;           // in case we want to use the method with a different "this"
         ret.__yy_userFunction = true;
         //Object.setPrototypeOf( newfunc, newfunc.origfunc.prototype);
         return ret;
     } // end if
     else {
         var ret = undefined;
-        if (_func.origfunc) _func = _func.origfunc;
-        if (_func.__yy_bothSelfAndOther) {
-            ret = _func.bind(_inst);
+        if (func.origfunc) func = func.origfunc;
+        if (func.__yy_bothSelfAndOther) {
+            ret = func.bind(struct_ref_or_instance_id);
         }
         else {
-            var a = { func : _func };
+            var a = { func : func };
             var newfunc;
-            if (_func.__yy_onlySelfNoOther) {
+            if (func.__yy_onlySelfNoOther) {
                 newfunc = function() {
                     var newArgs = Array.prototype.slice.call(arguments);
                     // delete the other
@@ -314,8 +291,8 @@ function method( _inst, _func )
                 };
             } // end else
             ret = newfunc.bind(a);
-            ret.boundObject = _inst;
-            ret.origfunc = _func.origfunc === undefined ? _func : _func.origfunc;           // in case we want to use the method with a different "this"
+            ret.boundObject = struct_ref_or_instance_id;
+            ret.origfunc = func.origfunc === undefined ? func : func.origfunc;           // in case we want to use the method with a different "this"
         } // end else
         return ret;
     } // end else

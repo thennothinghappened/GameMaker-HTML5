@@ -80,7 +80,7 @@ function debug(text)
   var index;
   
   for (index = 0; index < arguments.length; ++index) {
-      print( arguments[index] );
+      console.debug( arguments[index] );
   }
 }
 
@@ -94,7 +94,7 @@ function debug(text)
 
 //    for (index = 0; index < arguments.length; ++index)
 //    {
-//    	print(arguments[index]);
+//    	console.debug(arguments[index]);
 //    }
 //}
 

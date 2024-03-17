@@ -20,46 +20,42 @@
 ///          </summary>
 // #############################################################################################
 /** @constructor */
-function yyWeakRef()
-{    
-    this.__yyIsGMLObject = true;
-    this.__type = "[weakref]";
-    
-    this.pWeakRef = null;
+class yyWeakRef {
+    constructor() {
+        this.__yyIsGMLObject = true;
+        this.__type = "[weakref]";
 
-    this.IsRefAlive = function ()
-    {
-        if (this.pWeakRef == null)
-        {
-            return undefined;
-        }
-        else if (this.pWeakRef.deref() == undefined)
-        {
-            return false;
-        }        
-        
-        return true;        
-    };
+        this.pWeakRef = null;
 
-    this.SetReference = function (_pRef)
-    {
-        if (typeof WeakRef === "undefined")
-        {
-            this.pWeakRef = null;
-        }        
-        else
-        {
-            this.pWeakRef = new WeakRef(_pRef);
-        }
-        
-    };   
+        this.IsRefAlive = function () {
+            if (this.pWeakRef == null) {
+                return undefined;
+            }
+            else if (this.pWeakRef.deref() == undefined) {
+                return false;
+            }
 
-    Object.defineProperties(this, {
-        gmlref: {
-            enumerable: true,
-            get: function () { return (this.pWeakRef == null) ? undefined : ((this.pWeakRef.deref() == undefined) ? undefined : this.pWeakRef.deref()); }
-        }
-    });
+            return true;
+        };
+
+        this.SetReference = function (_pRef) {
+            if (typeof WeakRef === "undefined") {
+                this.pWeakRef = null;
+            }
+
+            else {
+                this.pWeakRef = new WeakRef(_pRef);
+            }
+
+        };
+
+        Object.defineProperties(this, {
+            gmlref: {
+                enumerable: true,
+                get: function () { return (this.pWeakRef == null) ? undefined : ((this.pWeakRef.deref() == undefined) ? undefined : this.pWeakRef.deref()); }
+            }
+        });
+    }
 }
 
 function weak_ref_create(_pRef)

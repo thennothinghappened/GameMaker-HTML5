@@ -31,10 +31,12 @@ var OBJECT_PHYSICS_SHAPE_CIRCLE = 0,
 ///			</returns>
 // #############################################################################################
 /**@constructor*/
-function yyTriggerEvent() {
-	this.m_pFunction = null; 	// function to call
-	this.m_Index = 0; 			// trigger index
-	this.m_pTrigger = null; 	// Actual trigger entry
+class yyTriggerEvent {
+    constructor() {
+        this.m_pFunction = null; // function to call
+        this.m_Index = 0; // trigger index
+        this.m_pTrigger = null; // Actual trigger entry
+    }
 }
 
 // #############################################################################################
@@ -47,10 +49,12 @@ function yyTriggerEvent() {
 ///			</returns>
 // #############################################################################################
 /**@constructor*/
-function yyCollisionEntry() {
-	this.m_pFunction = null;		// function to call
-	this.m_derived = false;			// is this a derived call?
-	this.m_pObject = null;			// the object that this function came from.
+class yyCollisionEntry {
+    constructor() {
+        this.m_pFunction = null; // function to call
+        this.m_derived = false; // is this a derived call?
+        this.m_pObject = null; // the object that this function came from.
+    }
 }
 
 // #############################################################################################
@@ -59,17 +63,19 @@ function yyCollisionEntry() {
 ///          </summary>
 // #############################################################################################
 /**@constructor*/
-function yyPhysicsData() {
+class yyPhysicsData {
+    constructor() {
 
-    this.physicsObject = false;
-    /*this.physicsSensor = false;
-    this.physicsShape = 0;
-    this.physicsDensity = 0;
-    this.physicsRestitution = 0;
-    this.physicsGroup = 0;
-    this.physicsLinearDamping = 0;
-    this.physicsAngularDamping = 0;
-    this.friction = 0;*/
+        this.physicsObject = false;
+        /*this.physicsSensor = false;
+        this.physicsShape = 0;
+        this.physicsDensity = 0;
+        this.physicsRestitution = 0;
+        this.physicsGroup = 0;
+        this.physicsLinearDamping = 0;
+        this.physicsAngularDamping = 0;
+        this.friction = 0;*/
+    }
 }
 
 // #############################################################################################
@@ -81,47 +87,341 @@ function yyPhysicsData() {
 ///			 <param name="name">Name of the object</param>
 // #############################################################################################
 /**@constructor*/
-function    yyObject( _objectnumber, _name )
-{
-    this.__type = "[Object]";
-    this.Flags = 0;
-    this.ID = _objectnumber;							// object ID
-    this.Name = _name;								// object name
-    this.SpriteMask = -1;                           // index of the mask sprite
-    this.SpriteIndex = 0;                           // index of the sprite used
-    this.Depth = 0;                                 // depth of the object
-    this.Solid = false;
-    this.Visible = false;
-    this.Persistent = false;
-    this.ParentID = 0;                              // index of the parent
-    this.pParent = null;
+class yyObject {
+    constructor(_objectnumber, _name) {
+        this.__type = "[Object]";
+        this.Flags = 0;
+        this.ID = _objectnumber; // object ID
+        this.Name = _name; // object name
+        this.SpriteMask = -1; // index of the mask sprite
+        this.SpriteIndex = 0; // index of the sprite used
+        this.Depth = 0; // depth of the object
+        this.Solid = false;
+        this.Visible = false;
+        this.Persistent = false;
+        this.ParentID = 0; // index of the parent
+        this.pParent = null;
 
-    this.ManagerIndex = -1;                          // the index int the manager
-    this.CollisionDone = false;						 // Used for tracking collision list building
-    
-    this.Instances = new yyList();                   // list of all the objects instances
-    this.Instances_Recursive = new yyList();         // recursive (parent) instance lists
-    this.Instances.packing = true;
-    this.Instances_Recursive.packing = true;
+        this.ManagerIndex = -1; // the index int the manager
+        this.CollisionDone = false; // Used for tracking collision list building
 
-	this.ObjAlarm = [];
-	for(var a=0;a<MAXTIMER;a++){
-	    this.ObjAlarm[a]=null;
-	}
+        this.Instances = new yyList(); // list of all the objects instances
+        this.Instances_Recursive = new yyList(); // recursive (parent) instance lists
+        this.Instances.packing = true;
+        this.Instances_Recursive.packing = true;
 
-	this.ObjKeyDown = [];
-	this.ObjKeyPressed = [];
-	this.ObjKeyReleased = [];
-    this.Collisions = [];
-    this.Triggers = [];
-    this.Event = [];
-    this.REvent = [];
-    
-    this.PhysicsData = new yyPhysicsData();    
+        this.ObjAlarm = [];
+        for (var a = 0; a < MAXTIMER; a++) {
+            this.ObjAlarm[a] = null;
+        }
+
+        this.ObjKeyDown = [];
+        this.ObjKeyPressed = [];
+        this.ObjKeyReleased = [];
+        this.Collisions = [];
+        this.Triggers = [];
+        this.Event = [];
+        this.REvent = [];
+
+        this.PhysicsData = new yyPhysicsData();
+    }
+    GetPool() { return this.Instances.pool; }
+    GetRPool() { return this.Instances_Recursive.pool; }
+    // #############################################################################################
+    /// Function:<summary>
+    ///             Create an object from its "loaded" data
+    ///          </summary>
+    ///
+    /// In:		 <param name="_ID"></param>
+    ///			 <param name="_pObjectStorage"></param>
+    /// Out:	 <returns>
+    ///				
+    ///			 </returns>
+    // #############################################################################################
+    HasEvent(_event, _subevent) {
+        if (this.Event[_event]) return true;
+        return false;
+    }
+    // #############################################################################################
+    /// Function:<summary>
+    ///             Execute a single event for this object
+    ///          </summary>
+    ///
+    /// In:		 <param name="_pInst">this object</param>
+    ///			 <param name="_pother">other object</param>
+    // #############################################################################################
+    PerformEvent(_event, index, _pInst, _pOther, _is_async) {
+        // Stop when room has changed or an error occured
+        //+allow certain events when room or instance is persistent (as native runner)
+        var eventType = _event & EVENT_TYPE_MASK;
+        if (!_is_async
+            && (_event != EVENT_CLEAN_UP)
+            && New_Room != -1
+            && !(
+                (_pInst.persistent || g_RunRoom.m_persistent)
+                && (
+                    eventType == EVENT_CREATE
+                    || eventType == EVENT_PRE_CREATE
+                    || eventType == EVENT_DESTROY
+                    || eventType == EVENT_ALARM
+                    || eventType == EVENT_OTHER
+                ))) {
+            return;
+        }
+
+
+        var LastEvent = g_LastEvent;
+        var LastEventArrayIndex = g_LastEventArrayIndex;
+        var LastEventpObject = g_LastEventpObject;
+        var oldrel = Argument_Relative;
+
+        g_LastEventpObject = this;
+        g_LastEvent = _event;
+        g_LastEventArrayIndex = index;
+        Argument_Relative = false;
+
+        var done = true;
+        switch (_event) {
+            case EVENT_PRE_CREATE: if (this.PreCreateEvent) this.PreCreateEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_CREATE: if (this.CreateEvent) this.CreateEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_DESTROY: if (this.DestroyEvent) this.DestroyEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_CLEAN_UP: if (this.CleanUpEvent) this.CleanUpEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_ALARM: done = false; break; // Shouldn't get called directly
+            case EVENT_STEP: done = false; break;
+            case EVENT_COLLISION: if (this.Collisions[index]) this.Collisions[index].m_pFunction(_pInst, _pOther); break;
+            // @if eventType("Keyboard")
+            case EVENT_KEYBOARD: if (this.ObjKeyDown[_event | index]) this.ObjKeyDown[_event | index](_pInst, _pOther); else done = false; break;
+            // @endif
+            case EVENT_MOUSE: done = false; break; // Shouldn't get called directly
+            case EVENT_OTHER: done = false; break; // Shouldn't get called directly
+            case EVENT_DRAW: if (this.DrawEvent) this.DrawEvent(_pInst, _pOther); else done = false; break;
+            // @if eventType("KeyPress")
+            case EVENT_KEYPRESS: if (this.ObjKeyPressed[_event | index]) this.ObjKeyPressed[_event | index](_pInst, _pOther); else done = false; break;
+            // @endif
+            // @if eventType("KeyRelease")
+            case EVENT_KEYRELEASE: if (this.ObjKeyReleased[_event | index]) this.ObjKeyReleased[_event | index](_pInst, _pOther); else done = false; break;
+            // @endif
+            // @if eventType("Trigger")
+            case EVENT_TRIGGER: if (this.Triggers[_event | index]) {
+                var pTriggerEvent = this.Triggers[_event | index]; // 1st get the trigger event block
+                var pTrigger = pTriggerEvent.m_pTrigger; // Now get the trigger "store" 
+                var result = pTrigger.pFunc(_pInst, _pOther); // evaluater the trigger
+                if (result | g_ForceTrigger) {
+                    pTriggerEvent.m_pFunction(_pInst, _pOther); // Finally, IF the trigger returned TRUE, call the object event.
+                }
+            }
+                break;
+            // @endif trigger
+            case EVENT_DRAW_GUI: if (this.DrawGUI) this.DrawGUI(_pInst, _pOther); else done = false; break;
+            case EVENT_DRAW_BEGIN: if (this.DrawEventBegin) this.DrawEventBegin(_pInst, _pOther); else done = false; break;
+            case EVENT_DRAW_END: if (this.DrawEventEnd) this.DrawEventEnd(_pInst, _pOther); else done = false; break;
+            case EVENT_DRAW_GUI_BEGIN: if (this.DrawGUIBegin) this.DrawGUIBegin(_pInst, _pOther); else done = false; break;
+            case EVENT_DRAW_GUI_END: if (this.DrawGUIEnd) this.DrawGUIEnd(_pInst, _pOther); else done = false; break;
+            case EVENT_DRAW_PRE: if (this.DrawPre) this.DrawPre(_pInst, _pOther); else done = false; break;
+            case EVENT_DRAW_POST: if (this.DrawPost) this.DrawPost(_pInst, _pOther); else done = false; break;
+            case EVENT_DRAW_RESIZE: if (this.DrawResize) this.DrawResize(_pInst, _pOther); else done = false; break;
+
+            case EVENT_STEP_BEGIN: if (this.StepBeginEvent) this.StepBeginEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_STEP_NORMAL: if (this.StepNormalEvent) this.StepNormalEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_STEP_END: if (this.StepEndEvent) this.StepEndEvent(_pInst, _pOther); else done = false; break;
+
+            // @if event("OutsideEvent")
+            case EVENT_OTHER_OUTSIDE: if (this.OutsideEvent) this.OutsideEvent(_pInst, _pOther); else done = false; break;
+            // @endif
+            // @if event("BoundaryEvent")
+            case EVENT_OTHER_BOUNDARY: if (this.BoundaryEvent) this.BoundaryEvent(_pInst, _pOther); else done = false; break;
+            // @endif
+            case EVENT_OTHER_STARTGAME: if (this.StartGameEvent) this.StartGameEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_ENDGAME: if (this.EndGameEvent) this.EndGameEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_STARTROOM: if (this.StartRoomEvent) this.StartRoomEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_ENDROOM: if (this.EndRoomEvent) this.EndRoomEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_NOLIVES: if (this.NoLivesEvent) this.NoLivesEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_ANIMATIONEND: if (this.AnimationEndEvent) this.AnimationEndEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_ENDOFPATH: if (this.EndOfPathEvent) this.EndOfPathEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_NOHEALTH: if (this.NoHealthEvent) this.NoHealthEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_CLOSEBUTTON: if (this.CloseButtonEvent) this.CloseButtonEvent(_pInst, _pOther); else done = false; break;
+            // @if event("OutsideView*")
+            case EVENT_OTHER_OUTSIDE_VIEW0: if (this.OutsideView0Event) this.OutsideView0Event(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_OUTSIDE_VIEW1: if (this.OutsideView1Event) this.OutsideView1Event(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_OUTSIDE_VIEW2: if (this.OutsideView2Event) this.OutsideView2Event(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_OUTSIDE_VIEW3: if (this.OutsideView3Event) this.OutsideView3Event(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_OUTSIDE_VIEW4: if (this.OutsideView4Event) this.OutsideView4Event(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_OUTSIDE_VIEW5: if (this.OutsideView5Event) this.OutsideView5Event(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_OUTSIDE_VIEW6: if (this.OutsideView6Event) this.OutsideView6Event(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_OUTSIDE_VIEW7: if (this.OutsideView7Event) this.OutsideView7Event(_pInst, _pOther); else done = false; break;
+            // @endif
+            // @if event("BoundaryView*")
+            case EVENT_OTHER_BOUNDARY_VIEW0: if (this.BoundaryView0Event) this.BoundaryView0Event(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_BOUNDARY_VIEW1: if (this.BoundaryView1Event) this.BoundaryView1Event(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_BOUNDARY_VIEW2: if (this.BoundaryView2Event) this.BoundaryView2Event(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_BOUNDARY_VIEW3: if (this.BoundaryView3Event) this.BoundaryView3Event(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_BOUNDARY_VIEW4: if (this.BoundaryView4Event) this.BoundaryView4Event(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_BOUNDARY_VIEW5: if (this.BoundaryView5Event) this.BoundaryView5Event(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_BOUNDARY_VIEW6: if (this.BoundaryView6Event) this.BoundaryView6Event(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_BOUNDARY_VIEW7: if (this.BoundaryView7Event) this.BoundaryView7Event(_pInst, _pOther); else done = false; break;
+            // @endif
+            case EVENT_OTHER_ANIMATIONUPDATE: if (this.AnimationUpdateEvent) this.AnimationUpdateEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_ANIMATIONEVENT: if (this.AnimationEventEvent) this.AnimationEventEvent(_pInst, _pOther); else done = false; break;
+
+            case EVENT_OTHER_WEB_IMAGE_LOAD: if (this.WebImageLoadedEvent) this.WebImageLoadedEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_WEB_SOUND_LOAD: if (this.WebSoundLoadedEvent) this.WebSoundLoadedEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_WEB_ASYNC: if (this.WebAsyncEvent) this.WebAsyncEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_WEB_USER_INTERACTION: if (this.WebUserInteractionEvent) this.WebUserInteractionEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_WEB_IAP: if (this.WebIAPEvent) this.WebIAPEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_SOCIAL: if (this.SocialEvent) this.SocialEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_PUSH_NOTIFICATION: if (this.PushNotificationEvent) this.PushNotificationEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_ASYNC_SAVE_LOAD: if (this.AsyncSaveLoadEvent) this.AsyncSaveLoadEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_NETWORKING: if (this.NetworkingEvent) this.NetworkingEvent(_pInst, _pOther); else done = false; break;
+            // @if feature("audio")
+            case EVENT_OTHER_AUDIO_PLAYBACK: if (this.AudioPlaybackEvent) this.AudioPlaybackEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_AUDIO_PLAYBACK_ENDED: if (this.AudioPlaybackEndedEvent) this.AudioPlaybackEndedEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_AUDIO_RECORDING: if (this.AudioRecordingEvent) this.AudioRecordingEvent(_pInst, _pOther); else done = false; break;
+            // @endif audio
+            case EVENT_OTHER_SYSTEM_EVENT: if (this.SystemEvent) this.SystemEvent(_pInst, _pOther); else done = false; break;
+
+            case EVENT_OTHER_BROADCAST_MESSAGE: if (this.BroadcastMessageEvent) this.BroadcastMessageEvent(_pInst, _pOther); else done = false; break;
+
+            // @if event("UserEvent*")
+            case EVENT_OTHER_USER0: if (this.UserEvent0) this.UserEvent0(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_USER1: if (this.UserEvent1) this.UserEvent1(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_USER2: if (this.UserEvent2) this.UserEvent2(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_USER3: if (this.UserEvent3) this.UserEvent3(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_USER4: if (this.UserEvent4) this.UserEvent4(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_USER5: if (this.UserEvent5) this.UserEvent5(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_USER6: if (this.UserEvent6) this.UserEvent6(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_USER7: if (this.UserEvent7) this.UserEvent7(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_USER8: if (this.UserEvent8) this.UserEvent8(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_USER9: if (this.UserEvent9) this.UserEvent9(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_USER10: if (this.UserEvent10) this.UserEvent10(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_USER11: if (this.UserEvent11) this.UserEvent11(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_USER12: if (this.UserEvent12) this.UserEvent12(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_USER13: if (this.UserEvent13) this.UserEvent13(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_USER14: if (this.UserEvent14) this.UserEvent14(_pInst, _pOther); else done = false; break;
+            case EVENT_OTHER_USER15: if (this.UserEvent15) this.UserEvent15(_pInst, _pOther); else done = false; break;
+            // @endif
+            // @if eventType("Mouse")
+            case EVENT_MOUSE_NOBUTTON: if (this.NoButtonPressed) this.NoButtonPressed(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_LBUTTON_DOWN: if (this.LeftButtonDown) this.LeftButtonDown(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_RBUTTON_DOWN: if (this.RightButtonDown) this.RightButtonDown(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_MBUTTON_DOWN: if (this.MiddleButtonDown) this.MiddleButtonDown(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_LBUTTON_PRESSED: if (this.LeftButtonPressed) this.LeftButtonPressed(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_RBUTTON_PRESSED: if (this.RightButtonPressed) this.RightButtonPressed(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_MBUTTON_PRESSED: if (this.MiddleButtonPressed) this.MiddleButtonPressed(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_LBUTTON_RELEASED: if (this.LeftButtonReleased) this.LeftButtonReleased(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_RBUTTON_RELEASED: if (this.RightButtonReleased) this.RightButtonReleased(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_MBUTTON_RELEASED: if (this.MiddleButtonReleased) this.MiddleButtonReleased(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_WHEEL_UP: if (this.MouseWheelUp) this.MouseWheelUp(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_WHEEL_DOWN: if (this.MouseWheelDown) this.MouseWheelDown(_pInst, _pOther); else done = false; break;
+
+            case EVENT_MOUSE_GLOBAL_LBUTTON_DOWN: if (this.GlobalLeftButtonDown) this.GlobalLeftButtonDown(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_GLOBAL_RBUTTON_DOWN: if (this.GlobalRightButtonDown) this.GlobalRightButtonDown(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_GLOBAL_MBUTTON_DOWN: if (this.GlobalMiddleButtonDown) this.GlobalMiddleButtonDown(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_GLOBAL_LBUTTON_PRESSED: if (this.GlobalLeftButtonPressed) this.GlobalLeftButtonPressed(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_GLOBAL_RBUTTON_PRESSED: if (this.GlobalRightButtonPressed) this.GlobalRightButtonPressed(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_GLOBAL_MBUTTON_PRESSED: if (this.GlobalMiddleButtonPressed) this.GlobalMiddleButtonPressed(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_GLOBAL_LBUTTON_RELEASED: if (this.GlobalLeftButtonReleased) this.GlobalLeftButtonReleased(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_GLOBAL_RBUTTON_RELEASED: if (this.GlobalRightButtonReleased) this.GlobalRightButtonReleased(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_GLOBAL_MBUTTON_RELEASED: if (this.GlobalMiddleButtonReleased) this.GlobalMiddleButtonReleased(_pInst, _pOther); else done = false; break;
+
+            case EVENT_MOUSE_ENTER: if (this.MouseEnter) this.MouseEnter(_pInst, _pOther); else done = false; break;
+            case EVENT_MOUSE_LEAVE: if (this.MouseLeave) this.MouseLeave(_pInst, _pOther); else done = false; break;
+            // @endif
+            // @if eventType("Gesture")
+            case EVENT_GESTURE_TAP: if (this.GestureTapEvent) this.GestureTapEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_GESTURE_DOUBLE_TAP: if (this.GestureDoubleTapEvent) this.GestureDoubleTapEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_GESTURE_DRAG_START: if (this.GestureDragStartEvent) this.GestureDragStartEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_GESTURE_DRAG_MOVE: if (this.GestureDragMoveEvent) this.GestureDragMoveEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_GESTURE_DRAG_END: if (this.GestureDragEndEvent) this.GestureDragEndEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_GESTURE_FLICK: if (this.GestureFlickEvent) this.GestureFlickEvent(_pInst, _pOther); else done = false; break;
+
+            case EVENT_GESTURE_GLOBAL_TAP: if (this.GestureGlobalTapEvent) this.GestureGlobalTapEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_GESTURE_GLOBAL_DOUBLE_TAP: if (this.GestureGlobalDoubleTapEvent) this.GestureGlobalDoubleTapEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_GESTURE_GLOBAL_DRAG_START: if (this.GestureGlobalDragStartEvent) this.GestureGlobalDragStartEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_GESTURE_GLOBAL_DRAG_MOVE: if (this.GestureGlobalDragMoveEvent) this.GestureGlobalDragMoveEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_GESTURE_GLOBAL_DRAG_END: if (this.GestureGlobalDragEndEvent) this.GestureGlobalDragEndEvent(_pInst, _pOther); else done = false; break;
+            case EVENT_GESTURE_GLOBAL_FLICK: if (this.GestureGlobalFlickEvent) this.GestureGlobalFlickEvent(_pInst, _pOther); else done = false; break;
+            // @endif
+            // @if eventType("Alarm")
+            case EVENT_ALARM_0: if (this.ObjAlarm[0] != null) this.ObjAlarm[0](_pInst, _pOther); else done = false; break;
+            case EVENT_ALARM_1: if (this.ObjAlarm[1] != null) this.ObjAlarm[1](_pInst, _pOther); else done = false; break;
+            case EVENT_ALARM_2: if (this.ObjAlarm[2] != null) this.ObjAlarm[2](_pInst, _pOther); else done = false; break;
+            case EVENT_ALARM_3: if (this.ObjAlarm[3] != null) this.ObjAlarm[3](_pInst, _pOther); else done = false; break;
+            case EVENT_ALARM_4: if (this.ObjAlarm[4] != null) this.ObjAlarm[4](_pInst, _pOther); else done = false; break;
+            case EVENT_ALARM_5: if (this.ObjAlarm[5] != null) this.ObjAlarm[5](_pInst, _pOther); else done = false; break;
+            case EVENT_ALARM_6: if (this.ObjAlarm[6] != null) this.ObjAlarm[6](_pInst, _pOther); else done = false; break;
+            case EVENT_ALARM_7: if (this.ObjAlarm[7] != null) this.ObjAlarm[7](_pInst, _pOther); else done = false; break;
+            case EVENT_ALARM_8: if (this.ObjAlarm[8] != null) this.ObjAlarm[8](_pInst, _pOther); else done = false; break;
+            case EVENT_ALARM_9: if (this.ObjAlarm[9] != null) this.ObjAlarm[9](_pInst, _pOther); else done = false; break;
+            case EVENT_ALARM_10: if (this.ObjAlarm[10] != null) this.ObjAlarm[10](_pInst, _pOther); else done = false; break;
+            case EVENT_ALARM_11: if (this.ObjAlarm[11] != null) this.ObjAlarm[11](_pInst, _pOther); else done = false; break;
+            // @endif
+            default:
+                done = false;
+        }
+
+        Argument_Relative = oldrel;
+        g_LastEvent = LastEvent;
+        g_LastEventArrayIndex = LastEventArrayIndex;
+        g_LastEventpObject = LastEventpObject;
+        return done;
+    }
+    // #############################################################################################
+    /// Function:<summary>
+    ///             Add an instance into the various lists.
+    ///          </summary>
+    ///
+    /// In:		 <param name="_pInstance"></param>
+    /// Out:	 <returns>
+    ///				
+    ///			 </returns>
+    // #############################################################################################
+    AddInstance(_pInstance) {
+        this.Instances.Add(_pInstance);
+        var pObj = this;
+        while (pObj != null) {
+            pObj.Instances_Recursive.Add(_pInstance);
+            pObj = pObj.pParent;
+        }
+    }
+    // #############################################################################################
+    /// Function:<summary>
+    ///             Remove an instance from the object and object_recursive list
+    ///          </summary>
+    ///
+    /// In:		 <param name="_pInstance">Instance to remove</param>
+    // #############################################################################################
+    RemoveInstance(_pInstance) {
+        this.Instances.DeleteItem(_pInstance);
+
+        // Remove instance from "recursive" lists... 	
+        var pObjType = this;
+        while (pObjType != null) {
+            pObjType.Instances_Recursive.DeleteItem(_pInstance);
+            pObjType = pObjType.pParent;
+        }
+    }
+    // #############################################################################################
+    /// Function:<summary>
+    ///             
+    ///          </summary>
+    ///
+    /// In:		 <param name="_event"></param>
+    /// In:		 <param name="_index"></param>
+    // #############################################################################################
+    PerformInstanceEvent(_event, _index, _is_async) {
+
+        // If we don't do this event, then return...
+        if (!this.Event[_event | _index]) return;
+
+        // If this object DOES perform this event, then loop through all its instances and perform the event on each.
+        var pool = this.Instances_Recursive.pool;
+        for (var i = 0; i < pool.length; i++) {
+            var pInst = pool[i];
+            this.PerformEvent(_event, _index, pInst, pInst, _is_async);
+        }
+    }
 }
 
-yyObject.prototype.GetPool = function () { return this.Instances.pool; };
-yyObject.prototype.GetRPool = function () { return this.Instances_Recursive.pool; };
 
 
 // #############################################################################################
@@ -670,256 +970,7 @@ function    CreateObjectFromStorage( _ID, _pObjectStorage ) {
 }
 
 
-// #############################################################################################
-/// Function:<summary>
-///             Create an object from its "loaded" data
-///          </summary>
-///
-/// In:		 <param name="_ID"></param>
-///			 <param name="_pObjectStorage"></param>
-/// Out:	 <returns>
-///				
-///			 </returns>
-// #############################################################################################
-yyObject.prototype.HasEvent = function (_event, _subevent) {
-	if (this.Event[_event]) return true;
-	return false;
-};
 
-// #############################################################################################
-/// Function:<summary>
-///             Execute a single event for this object
-///          </summary>
-///
-/// In:		 <param name="_pInst">this object</param>
-///			 <param name="_pother">other object</param>
-// #############################################################################################
-yyObject.prototype.PerformEvent = function (_event, index, _pInst, _pOther, _is_async) {
-    // Stop when room has changed or an error occured
-    //+allow certain events when room or instance is persistent (as native runner)
-
-    var eventType = _event & EVENT_TYPE_MASK;
-    if (!_is_async
-        && (_event != EVENT_CLEAN_UP)
-        && New_Room != -1
-        && !(
-                (_pInst.persistent || g_RunRoom.m_persistent)
-                && (
-                    eventType == EVENT_CREATE
-                    || eventType == EVENT_PRE_CREATE
-                    || eventType == EVENT_DESTROY
-                    || eventType == EVENT_ALARM
-                    || eventType == EVENT_OTHER
-                ))){
-        return;
-    }
-
-
-	var LastEvent = g_LastEvent;
-	var LastEventArrayIndex = g_LastEventArrayIndex;
-	var LastEventpObject = g_LastEventpObject;
-	var oldrel = Argument_Relative;
-
-	g_LastEventpObject = this;
-	g_LastEvent = _event;
-	g_LastEventArrayIndex = index;
-	Argument_Relative = false;
-
-	var done = true;
-	switch (_event)
-	{
-        case EVENT_PRE_CREATE: if (this.PreCreateEvent) this.PreCreateEvent(_pInst, _pOther); else done = false; break;
-		case EVENT_CREATE: if (this.CreateEvent) this.CreateEvent(_pInst, _pOther); else done = false; break;
-		case EVENT_DESTROY: if (this.DestroyEvent) this.DestroyEvent(_pInst, _pOther); else done = false; break;
-		case EVENT_CLEAN_UP: if (this.CleanUpEvent) this.CleanUpEvent(_pInst, _pOther); else done = false; break;
-		case EVENT_ALARM: done = false; break;  // Shouldn't get called directly
-		case EVENT_STEP: done = false; break;
-		case EVENT_COLLISION: if (this.Collisions[index]) this.Collisions[index].m_pFunction(_pInst, _pOther); break;
-        // @if eventType("Keyboard")
-		case EVENT_KEYBOARD: if (this.ObjKeyDown[_event | index]) this.ObjKeyDown[_event | index](_pInst, _pOther); else done = false; break;
-		// @endif
-        case EVENT_MOUSE: done = false; break;  // Shouldn't get called directly
-		case EVENT_OTHER: done = false; break;  // Shouldn't get called directly
-		case EVENT_DRAW: if (this.DrawEvent) this.DrawEvent(_pInst, _pOther); else done = false; break;
-        // @if eventType("KeyPress")
-		case EVENT_KEYPRESS: if (this.ObjKeyPressed[_event | index]) this.ObjKeyPressed[_event | index](_pInst, _pOther); else done = false; break;
-        // @endif
-		// @if eventType("KeyRelease")
-        case EVENT_KEYRELEASE: if (this.ObjKeyReleased[_event | index]) this.ObjKeyReleased[_event | index](_pInst, _pOther); else done = false; break;
-        // @endif
-        // @if eventType("Trigger")
-		case EVENT_TRIGGER: if (this.Triggers[_event | index])
-			{
-				var pTriggerEvent = this.Triggers[_event | index]; 						// 1st get the trigger event block
-				var pTrigger = pTriggerEvent.m_pTrigger;							// Now get the trigger "store" 
-				var result = pTrigger.pFunc(_pInst, _pOther);						// evaluater the trigger
-				if (result | g_ForceTrigger)
-				{
-					pTriggerEvent.m_pFunction(_pInst, _pOther);						// Finally, IF the trigger returned TRUE, call the object event.
-				}
-			}
-			break;
-        // @endif trigger
-
-		case EVENT_DRAW_GUI: if (this.DrawGUI) this.DrawGUI(_pInst, _pOther); else done = false; break;
-		case EVENT_DRAW_BEGIN: if (this.DrawEventBegin) this.DrawEventBegin(_pInst, _pOther); else done = false; break;
-		case EVENT_DRAW_END: if (this.DrawEventEnd) this.DrawEventEnd(_pInst, _pOther); else done = false; break;
-		case EVENT_DRAW_GUI_BEGIN: if (this.DrawGUIBegin) this.DrawGUIBegin(_pInst, _pOther); else done = false; break;
-		case EVENT_DRAW_GUI_END: if (this.DrawGUIEnd) this.DrawGUIEnd(_pInst, _pOther); else done = false; break;
-		case EVENT_DRAW_PRE: if (this.DrawPre) this.DrawPre(_pInst, _pOther); else done = false; break;
-		case EVENT_DRAW_POST: if (this.DrawPost) this.DrawPost(_pInst, _pOther); else done = false; break;
-		case EVENT_DRAW_RESIZE: if (this.DrawResize) this.DrawResize(_pInst, _pOther); else done = false; break;
-
-		case EVENT_STEP_BEGIN: if (this.StepBeginEvent) this.StepBeginEvent(_pInst, _pOther); else done = false; break;
-		case EVENT_STEP_NORMAL: if (this.StepNormalEvent) this.StepNormalEvent(_pInst, _pOther); else done = false; break;
-		case EVENT_STEP_END: if (this.StepEndEvent) this.StepEndEvent(_pInst, _pOther); else done = false; break;
-
-		// @if event("OutsideEvent")
-        case EVENT_OTHER_OUTSIDE: if (this.OutsideEvent) this.OutsideEvent(_pInst, _pOther); else done = false; break;
-        // @endif
-        // @if event("BoundaryEvent")
-		case EVENT_OTHER_BOUNDARY: if (this.BoundaryEvent) this.BoundaryEvent(_pInst, _pOther); else done = false; break;
-        // @endif
-		case EVENT_OTHER_STARTGAME: if (this.StartGameEvent) this.StartGameEvent(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_ENDGAME: if (this.EndGameEvent) this.EndGameEvent(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_STARTROOM: if (this.StartRoomEvent) this.StartRoomEvent(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_ENDROOM: if (this.EndRoomEvent) this.EndRoomEvent(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_NOLIVES: if (this.NoLivesEvent) this.NoLivesEvent(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_ANIMATIONEND: if (this.AnimationEndEvent) this.AnimationEndEvent(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_ENDOFPATH: if (this.EndOfPathEvent) this.EndOfPathEvent(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_NOHEALTH: if (this.NoHealthEvent) this.NoHealthEvent(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_CLOSEBUTTON: if (this.CloseButtonEvent) this.CloseButtonEvent(_pInst, _pOther); else done = false; break;
-        // @if event("OutsideView*")
-		case EVENT_OTHER_OUTSIDE_VIEW0: if (this.OutsideView0Event) this.OutsideView0Event(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_OUTSIDE_VIEW1: if (this.OutsideView1Event) this.OutsideView1Event(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_OUTSIDE_VIEW2: if (this.OutsideView2Event) this.OutsideView2Event(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_OUTSIDE_VIEW3: if (this.OutsideView3Event) this.OutsideView3Event(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_OUTSIDE_VIEW4: if (this.OutsideView4Event) this.OutsideView4Event(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_OUTSIDE_VIEW5: if (this.OutsideView5Event) this.OutsideView5Event(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_OUTSIDE_VIEW6: if (this.OutsideView6Event) this.OutsideView6Event(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_OUTSIDE_VIEW7: if (this.OutsideView7Event) this.OutsideView7Event(_pInst, _pOther); else done = false; break;
-        // @endif
-        // @if event("BoundaryView*")
-		case EVENT_OTHER_BOUNDARY_VIEW0: if (this.BoundaryView0Event) this.BoundaryView0Event(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_BOUNDARY_VIEW1: if (this.BoundaryView1Event) this.BoundaryView1Event(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_BOUNDARY_VIEW2: if (this.BoundaryView2Event) this.BoundaryView2Event(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_BOUNDARY_VIEW3: if (this.BoundaryView3Event) this.BoundaryView3Event(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_BOUNDARY_VIEW4: if (this.BoundaryView4Event) this.BoundaryView4Event(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_BOUNDARY_VIEW5: if (this.BoundaryView5Event) this.BoundaryView5Event(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_BOUNDARY_VIEW6: if (this.BoundaryView6Event) this.BoundaryView6Event(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_BOUNDARY_VIEW7: if (this.BoundaryView7Event) this.BoundaryView7Event(_pInst, _pOther); else done = false; break;
-        // @endif
-		
-		case EVENT_OTHER_ANIMATIONUPDATE: if (this.AnimationUpdateEvent) this.AnimationUpdateEvent(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_ANIMATIONEVENT: if (this.AnimationEventEvent) this.AnimationEventEvent(_pInst, _pOther); else done = false; break;
-
-        case EVENT_OTHER_WEB_IMAGE_LOAD: if (this.WebImageLoadedEvent) this.WebImageLoadedEvent(_pInst, _pOther); else done = false; break;
-        case EVENT_OTHER_WEB_SOUND_LOAD: if (this.WebSoundLoadedEvent) this.WebSoundLoadedEvent(_pInst, _pOther); else done = false; break;
-        case EVENT_OTHER_WEB_ASYNC: if (this.WebAsyncEvent) this.WebAsyncEvent(_pInst, _pOther); else done = false; break;
-        case EVENT_OTHER_WEB_USER_INTERACTION: if (this.WebUserInteractionEvent) this.WebUserInteractionEvent(_pInst, _pOther); else done = false; break;
-        case EVENT_OTHER_WEB_IAP: if (this.WebIAPEvent) this.WebIAPEvent(_pInst, _pOther); else done = false; break;
-        case EVENT_OTHER_SOCIAL: if( this.SocialEvent) this.SocialEvent( _pInst, _pOther); else done = false; break;
-        case EVENT_OTHER_PUSH_NOTIFICATION: if( this.PushNotificationEvent) this.PushNotificationEvent( _pInst, _pOther); else done =false; break;
-        case EVENT_OTHER_ASYNC_SAVE_LOAD: if( this.AsyncSaveLoadEvent) this.AsyncSaveLoadEvent( _pInst, _pOther); else done =false; break;
-        case EVENT_OTHER_NETWORKING: if( this.NetworkingEvent) this.NetworkingEvent( _pInst, _pOther); else done =false; break;
-        // @if feature("audio")
-        case EVENT_OTHER_AUDIO_PLAYBACK: if (this.AudioPlaybackEvent) this.AudioPlaybackEvent( _pInst, _pOther); else done = false; break;
-        case EVENT_OTHER_AUDIO_PLAYBACK_ENDED: if (this.AudioPlaybackEndedEvent) this.AudioPlaybackEndedEvent( _pInst, _pOther); else done = false; break;
-        case EVENT_OTHER_AUDIO_RECORDING: if (this.AudioRecordingEvent) this.AudioRecordingEvent( _pInst, _pOther); else done = false; break;
-        // @endif audio
-        case EVENT_OTHER_SYSTEM_EVENT: if (this.SystemEvent) this.SystemEvent(_pInst, _pOther); else done = false; break;
-
-	    case EVENT_OTHER_BROADCAST_MESSAGE: if (this.BroadcastMessageEvent) this.BroadcastMessageEvent(_pInst, _pOther); else done = false; break;
-
-		// @if event("UserEvent*")
-        case EVENT_OTHER_USER0: if (this.UserEvent0) this.UserEvent0(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_USER1: if (this.UserEvent1) this.UserEvent1(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_USER2: if (this.UserEvent2) this.UserEvent2(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_USER3: if (this.UserEvent3) this.UserEvent3(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_USER4: if (this.UserEvent4) this.UserEvent4(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_USER5: if (this.UserEvent5) this.UserEvent5(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_USER6: if (this.UserEvent6) this.UserEvent6(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_USER7: if (this.UserEvent7) this.UserEvent7(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_USER8: if (this.UserEvent8) this.UserEvent8(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_USER9: if (this.UserEvent9) this.UserEvent9(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_USER10: if (this.UserEvent10) this.UserEvent10(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_USER11: if (this.UserEvent11) this.UserEvent11(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_USER12: if (this.UserEvent12) this.UserEvent12(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_USER13: if (this.UserEvent13) this.UserEvent13(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_USER14: if (this.UserEvent14) this.UserEvent14(_pInst, _pOther); else done = false; break;
-		case EVENT_OTHER_USER15: if (this.UserEvent15) this.UserEvent15(_pInst, _pOther); else done = false; break;
-        // @endif
-
-
-		// @if eventType("Mouse")
-        case EVENT_MOUSE_NOBUTTON: if (this.NoButtonPressed) this.NoButtonPressed(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_LBUTTON_DOWN: if (this.LeftButtonDown) this.LeftButtonDown(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_RBUTTON_DOWN: if (this.RightButtonDown) this.RightButtonDown(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_MBUTTON_DOWN: if (this.MiddleButtonDown) this.MiddleButtonDown(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_LBUTTON_PRESSED: if (this.LeftButtonPressed) this.LeftButtonPressed(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_RBUTTON_PRESSED: if (this.RightButtonPressed) this.RightButtonPressed(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_MBUTTON_PRESSED: if (this.MiddleButtonPressed) this.MiddleButtonPressed(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_LBUTTON_RELEASED: if (this.LeftButtonReleased) this.LeftButtonReleased(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_RBUTTON_RELEASED: if (this.RightButtonReleased) this.RightButtonReleased(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_MBUTTON_RELEASED: if (this.MiddleButtonReleased) this.MiddleButtonReleased(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_WHEEL_UP: if (this.MouseWheelUp) this.MouseWheelUp(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_WHEEL_DOWN: if (this.MouseWheelDown) this.MouseWheelDown(_pInst, _pOther); else done = false; break;
-
-		case EVENT_MOUSE_GLOBAL_LBUTTON_DOWN: if (this.GlobalLeftButtonDown) this.GlobalLeftButtonDown(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_GLOBAL_RBUTTON_DOWN: if (this.GlobalRightButtonDown) this.GlobalRightButtonDown(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_GLOBAL_MBUTTON_DOWN: if (this.GlobalMiddleButtonDown) this.GlobalMiddleButtonDown(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_GLOBAL_LBUTTON_PRESSED: if (this.GlobalLeftButtonPressed) this.GlobalLeftButtonPressed(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_GLOBAL_RBUTTON_PRESSED: if (this.GlobalRightButtonPressed) this.GlobalRightButtonPressed(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_GLOBAL_MBUTTON_PRESSED: if (this.GlobalMiddleButtonPressed) this.GlobalMiddleButtonPressed(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_GLOBAL_LBUTTON_RELEASED: if (this.GlobalLeftButtonReleased) this.GlobalLeftButtonReleased(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_GLOBAL_RBUTTON_RELEASED: if (this.GlobalRightButtonReleased) this.GlobalRightButtonReleased(_pInst, _pOther); else done = false; break;
-		case EVENT_MOUSE_GLOBAL_MBUTTON_RELEASED: if (this.GlobalMiddleButtonReleased) this.GlobalMiddleButtonReleased(_pInst, _pOther); else done = false; break;
-
-		case EVENT_MOUSE_ENTER: if (this.MouseEnter) this.MouseEnter(_pInst, _pOther); else done = false; break;
-	    case EVENT_MOUSE_LEAVE: if (this.MouseLeave) this.MouseLeave(_pInst, _pOther); else done = false; break;
-        // @endif
-
-	    // @if eventType("Gesture")
-        case EVENT_GESTURE_TAP: if (this.GestureTapEvent) this.GestureTapEvent(_pInst, _pOther); else done = false; break;
-	    case EVENT_GESTURE_DOUBLE_TAP: if (this.GestureDoubleTapEvent) this.GestureDoubleTapEvent(_pInst, _pOther); else done = false; break;
-	    case EVENT_GESTURE_DRAG_START: if (this.GestureDragStartEvent) this.GestureDragStartEvent(_pInst, _pOther); else done = false; break;
-	    case EVENT_GESTURE_DRAG_MOVE: if (this.GestureDragMoveEvent) this.GestureDragMoveEvent(_pInst, _pOther); else done = false; break;
-	    case EVENT_GESTURE_DRAG_END: if (this.GestureDragEndEvent) this.GestureDragEndEvent(_pInst, _pOther); else done = false; break;
-	    case EVENT_GESTURE_FLICK: if (this.GestureFlickEvent) this.GestureFlickEvent(_pInst, _pOther); else done = false; break;
-
-	    case EVENT_GESTURE_GLOBAL_TAP: if (this.GestureGlobalTapEvent) this.GestureGlobalTapEvent(_pInst, _pOther); else done = false; break;
-	    case EVENT_GESTURE_GLOBAL_DOUBLE_TAP: if (this.GestureGlobalDoubleTapEvent) this.GestureGlobalDoubleTapEvent(_pInst, _pOther); else done = false; break;
-	    case EVENT_GESTURE_GLOBAL_DRAG_START: if (this.GestureGlobalDragStartEvent) this.GestureGlobalDragStartEvent(_pInst, _pOther); else done = false; break;
-	    case EVENT_GESTURE_GLOBAL_DRAG_MOVE: if (this.GestureGlobalDragMoveEvent) this.GestureGlobalDragMoveEvent(_pInst, _pOther); else done = false; break;
-	    case EVENT_GESTURE_GLOBAL_DRAG_END: if (this.GestureGlobalDragEndEvent) this.GestureGlobalDragEndEvent(_pInst, _pOther); else done = false; break;
-	    case EVENT_GESTURE_GLOBAL_FLICK: if (this.GestureGlobalFlickEvent) this.GestureGlobalFlickEvent(_pInst, _pOther); else done = false; break;
-        // @endif
-
-		// @if eventType("Alarm")
-        case EVENT_ALARM_0: if (this.ObjAlarm[0] != null) this.ObjAlarm[0](_pInst, _pOther); else done = false; break;
-		case EVENT_ALARM_1: if (this.ObjAlarm[1] != null) this.ObjAlarm[1](_pInst, _pOther); else done = false; break;
-		case EVENT_ALARM_2: if (this.ObjAlarm[2] != null) this.ObjAlarm[2](_pInst, _pOther); else done = false; break;
-		case EVENT_ALARM_3: if (this.ObjAlarm[3] != null) this.ObjAlarm[3](_pInst, _pOther); else done = false; break;
-		case EVENT_ALARM_4: if (this.ObjAlarm[4] != null) this.ObjAlarm[4](_pInst, _pOther); else done = false; break;
-		case EVENT_ALARM_5: if (this.ObjAlarm[5] != null) this.ObjAlarm[5](_pInst, _pOther); else done = false; break;
-		case EVENT_ALARM_6: if (this.ObjAlarm[6] != null) this.ObjAlarm[6](_pInst, _pOther); else done = false; break;
-		case EVENT_ALARM_7: if (this.ObjAlarm[7] != null) this.ObjAlarm[7](_pInst, _pOther); else done = false; break;
-		case EVENT_ALARM_8: if (this.ObjAlarm[8] != null) this.ObjAlarm[8](_pInst, _pOther); else done = false; break;
-		case EVENT_ALARM_9: if (this.ObjAlarm[9] != null) this.ObjAlarm[9](_pInst, _pOther); else done = false; break;
-		case EVENT_ALARM_10: if (this.ObjAlarm[10] != null) this.ObjAlarm[10](_pInst, _pOther); else done = false; break;
-		case EVENT_ALARM_11: if (this.ObjAlarm[11] != null) this.ObjAlarm[11](_pInst, _pOther); else done = false; break;
-        // @endif
-
-		default:
-			done = false;
-	}
-
-	Argument_Relative = oldrel;
-	g_LastEvent = LastEvent;
-	g_LastEventArrayIndex = LastEventArrayIndex;
-	g_LastEventpObject = LastEventpObject;
-	return done;
-};
 
 
 // #############################################################################################
@@ -1289,69 +1340,11 @@ function ConvertSubEvent(_event, _subevent)
 }
 
 
-// #############################################################################################
-/// Function:<summary>
-///             Add an instance into the various lists.
-///          </summary>
-///
-/// In:		 <param name="_pInstance"></param>
-/// Out:	 <returns>
-///				
-///			 </returns>
-// #############################################################################################
-yyObject.prototype.AddInstance = function (_pInstance) {
-	this.Instances.Add(_pInstance);
-	var pObj = this;
-	while (pObj != null)
-	{
-		pObj.Instances_Recursive.Add(_pInstance);
-		pObj = pObj.pParent;
-	}
-};
-
-
-// #############################################################################################
-/// Function:<summary>
-///             Remove an instance from the object and object_recursive list
-///          </summary>
-///
-/// In:		 <param name="_pInstance">Instance to remove</param>
-// #############################################################################################
-yyObject.prototype.RemoveInstance = function (_pInstance) {
-	this.Instances.DeleteItem(_pInstance);
-
-	// Remove instance from "recursive" lists... 	
-	var pObjType = this;
-	while (pObjType != null)
-	{
-		pObjType.Instances_Recursive.DeleteItem(_pInstance);
-		pObjType = pObjType.pParent;
-	}
-};
 
 
 
-// #############################################################################################
-/// Function:<summary>
-///             
-///          </summary>
-///
-/// In:		 <param name="_event"></param>
-/// In:		 <param name="_index"></param>
-// #############################################################################################
-yyObject.prototype.PerformInstanceEvent = function (_event, _index, _is_async) {
 
-	// If we don't do this event, then return...
-	if (!this.Event[_event | _index]) return;
 
-	// If this object DOES perform this event, then loop through all its instances and perform the event on each.
-	var pool = this.Instances_Recursive.pool;
-	for (var i = 0; i < pool.length; i++)
-	{
-		var pInst = pool[i];
-		this.PerformEvent(_event, _index, pInst, pInst, _is_async);
-	}
-};
 
 
 
@@ -1375,201 +1368,193 @@ yyObject.prototype.PerformInstanceEvent = function (_event, _index, _is_async) {
 ///          </summary>
 // #############################################################################################
 /**@constructor*/
-function yyObjectManager() {
-	this.objnamelist = [];
-	this.objidlist = [];
-	this.length = 0;
+class yyObjectManager {
+    constructor() {
+        this.objnamelist = [];
+        this.objidlist = [];
+        this.length = 0;
+    }
+    // #############################################################################################
+    /// Function:<summary>
+    ///          	Get the array of objects
+    ///          </summary>
+    ///
+    /// Out:	<returns>
+    ///				The object array
+    ///			</returns>
+    // #############################################################################################
+    GetPool() {
+        return this.objidlist;
+    }
+    // #############################################################################################
+    /// Function:<summary>
+    ///             Add an object to the managers lists
+    ///          </summary>
+    ///
+    /// In:		 <param name="pObj">Object to add</param>
+    // #############################################################################################
+    Add(_pObj) {
+        this.length++;
+        this.objnamelist[_pObj.Name] = _pObj;
+        this.objidlist[_pObj.ID] = _pObj;
+    }
+    // #############################################################################################
+    /// Function:<summary>
+    ///             Get the object using it's ID as a lookup
+    ///          </summary>
+    ///
+    /// In:		 <param name="pObj">Object to add</param>
+    // #############################################################################################
+    Get(_ID) {
+        var index = yyGetRef(_ID, REFID_OBJECT, undefined, undefined, true);
+        return this.objidlist[index];
+    }
+    // #############################################################################################
+    /// Function:<summary>
+    ///				Returns whether the object index exists
+    ///          </summary>
+    ///
+    /// In:		 <param name="_index">Object ID to check for</param>
+    /// Out:	 <returns>
+    ///				TRUE for yes, FALSE for no
+    ///			 </returns>
+    // #############################################################################################
+    Exists(_id) {
+        if (!this.objidlist[_id]) return false; else return true;
+    }
+    // #############################################################################################
+    /// Function:<summary>
+    ///				Returieves an array of all object asset IDs.
+    ///          </summary>
+    ///
+    /// Out:	 <returns>
+    ///				An array of all object asset IDs.
+    ///			 </returns>
+    // #############################################################################################
+    List() {
+        var ids = [];
+        for (var i = 0; i < this.objidlist.length; ++i) {
+            if (this.objidlist[i]) {
+                ids.push(i);
+            }
+        }
+        return ids;
+    }
+    // #############################################################################################
+    /// Function:<summary>
+    ///             Returns the name of the object
+    ///          </summary>
+    ///
+    /// In:		 <param name="_ID">The object ID/index</param>
+    /// Out:	 <returns>
+    ///				
+    ///			 </returns>
+    // #############################################################################################
+    Get_Object_Name(_ID) {
+        var pObj = this.objidlist[_ID];
+        if (!pObj) {
+            return "<undefined>";
+        }
+        else {
+            return pObj.Name;
+        }
+    }
+    // #############################################################################################
+    /// Function:<summary>
+    ///				Returns the index of object name. -1 if is does not exist
+    ///				Usually only called during level/room initialisation
+    ///          </summary>
+    ///
+    /// In:		 <param name="name"></param>
+    /// Out:	 <returns>
+    ///				Object index or -1 for not found
+    ///			 </returns>
+    // #############################################################################################
+    Object_Find(_name) {
+        var pObj = this.objnamelist[_name];
+        if (pObj != null) return pObj.ID;
+        return -1;
+    }
+    // #############################################################################################
+    /// Function: <summary>
+    ///           	Throw a global event.
+    ///           </summary>
+    // #############################################################################################
+    ThrowEvent(_event, _index, _is_async) {
+        // for (var o in g_pObjectManager.objidlist)
+        for (var o = 0; o < g_pObjectManager.objidlist.length; o++) {
+            // get the object
+            var pObj = g_pObjectManager.objidlist[o];
+            // IF this object wants the event... then perform the event on ALL its instances.
+            if (pObj.Event[_event | _index]) {
+                pObj.PerformInstanceEvent(_event, _index, _is_async);
+            }
+        }
+    }
+    // #############################################################################################
+    /// Function: <summary>
+    ///           	
+    ///           </summary>
+    // #############################################################################################
+    PatchParents() {
+
+        // First, patch up 
+        var pool = this.objidlist;
+        for (var index = 0; index < pool.length; index++) {
+            var pObj = pool[index];
+            pObj.pParent = g_pObjectManager.Get(pObj.ParentID);
+            if (!pObj.pParent) pObj.pParent = null;
+
+
+            // Copy all the event flags into the Recursive Event array
+            for (var e = 0; e < pObj.Event.length; e++) {
+                var evt = pObj.Event[e];
+                if (evt) {
+                    pObj.REvent[e] = true; // if the parent has the event, then so do we!
+                }
+            }
+
+        }
+
+
+        // next, make a "recursive" event flag array.	
+        for (var index = 0; index < pool.length; index++) {
+            var pMasterObject = pool[index];
+            var pObj = pMasterObject.pParent;
+
+            while (pObj != null) {
+                for (var e = 0; e < pObj.Event.length; e++) {
+                    var evt = pObj.Event[e];
+                    if (evt) {
+                        pMasterObject.REvent[e] = true; // if the parent has the event, then so do we!
+                    }
+                }
+                pObj = pObj.pParent;
+            }
+        }
+    }
 }    
 
 
-// #############################################################################################
-/// Function:<summary>
-///          	Get the array of objects
-///          </summary>
-///
-/// Out:	<returns>
-///				The object array
-///			</returns>
-// #############################################################################################
-yyObjectManager.prototype.GetPool = function () {
-	return this.objidlist;
-};
-
-// #############################################################################################
-/// Function:<summary>
-///             Add an object to the managers lists
-///          </summary>
-///
-/// In:		 <param name="pObj">Object to add</param>
-// #############################################################################################
-yyObjectManager.prototype.Add = function (_pObj) {
-	this.length++;
-	this.objnamelist[_pObj.Name] = _pObj;
-	this.objidlist[_pObj.ID] = _pObj;
-};
 
 
 
-// #############################################################################################
-/// Function:<summary>
-///             Get the object using it's ID as a lookup
-///          </summary>
-///
-/// In:		 <param name="pObj">Object to add</param>
-// #############################################################################################
-yyObjectManager.prototype.Get = function (_ID) {
-    var index = yyGetRef(_ID, REFID_OBJECT, undefined, undefined, true );
-	return this.objidlist[index];
-};
 
 
 
-// #############################################################################################
-/// Function:<summary>
-///				Returns whether the object index exists
-///          </summary>
-///
-/// In:		 <param name="_index">Object ID to check for</param>
-/// Out:	 <returns>
-///				TRUE for yes, FALSE for no
-///			 </returns>
-// #############################################################################################
-yyObjectManager.prototype.Exists = function (_id) {
-	if(!this.objidlist[_id]) return false; else return true;
-};
 
 
 
-// #############################################################################################
-/// Function:<summary>
-///				Returieves an array of all object asset IDs.
-///          </summary>
-///
-/// Out:	 <returns>
-///				An array of all object asset IDs.
-///			 </returns>
-// #############################################################################################
-yyObjectManager.prototype.List = function () {
-	var ids = [];
-    for (var i = 0; i < this.objidlist.length; ++i) {
-        if (this.objidlist[i]) {
-            ids.push(i);
-        }
-    }
-    return ids;
-};
-
-
-// #############################################################################################
-/// Function:<summary>
-///             Returns the name of the object
-///          </summary>
-///
-/// In:		 <param name="_ID">The object ID/index</param>
-/// Out:	 <returns>
-///				
-///			 </returns>
-// #############################################################################################
-yyObjectManager.prototype.Get_Object_Name = function (_ID) {
-    var pObj = this.objidlist[_ID];
-	if (!pObj)
-	{
-		return "<undefined>";
-	} else
-	{
-		return pObj.Name;
-	}
-};
-
-
-// #############################################################################################
-/// Function:<summary>
-///				Returns the index of object name. -1 if is does not exist
-///				Usually only called during level/room initialisation
-///          </summary>
-///
-/// In:		 <param name="name"></param>
-/// Out:	 <returns>
-///				Object index or -1 for not found
-///			 </returns>
-// #############################################################################################
-yyObjectManager.prototype.Object_Find = function (_name) {
-	var pObj = this.objnamelist[_name];
-	if (pObj != null) return pObj.ID;
-	return -1;
-};
 
 
 
-// #############################################################################################
-/// Function: <summary>
-///           	Throw a global event.
-///           </summary>
-// #############################################################################################
-yyObjectManager.prototype.ThrowEvent = function(_event, _index, _is_async) {
-	// for (var o in g_pObjectManager.objidlist)
-	for (var o = 0; o < g_pObjectManager.objidlist.length; o++)
-	{	    
-		// get the object
-		var pObj = g_pObjectManager.objidlist[o];
-		// IF this object wants the event... then perform the event on ALL its instances.
-		if (pObj.Event[_event | _index])
-		{
-			pObj.PerformInstanceEvent(_event, _index, _is_async);
-		}
-	}
-};
 
 
-// #############################################################################################
-/// Function: <summary>
-///           	
-///           </summary>
-// #############################################################################################
-yyObjectManager.prototype.PatchParents = function () {
-
-	// First, patch up 
-	var pool = this.objidlist;	
-	for (var index = 0; index < pool.length; index++)
-	{
-		var pObj = pool[index];
-		pObj.pParent = g_pObjectManager.Get(pObj.ParentID);
-		if (!pObj.pParent) pObj.pParent = null;
 
 
-		// Copy all the event flags into the Recursive Event array
-		for (var e = 0; e < pObj.Event.length; e++)
-		{
-			var evt = pObj.Event[e];
-			if (evt)
-			{
-				pObj.REvent[e] = true; 	// if the parent has the event, then so do we!
-			}
-		}
-
-	}
 
 
-	// next, make a "recursive" event flag array.	
-	for (var index = 0; index < pool.length; index++)
-	{
-		var pMasterObject = pool[index];
-		var pObj = pMasterObject.pParent;
 
-		while (pObj != null)
-		{			
-			for (var e = 0; e < pObj.Event.length; e++)
-			{
-				var evt = pObj.Event[e];
-				if (evt)
-				{
-					pMasterObject.REvent[e] = true; 	// if the parent has the event, then so do we!
-				}
-			}
-			pObj = pObj.pParent;
-		}
-	}
-};
 
 
 

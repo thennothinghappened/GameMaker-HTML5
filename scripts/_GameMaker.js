@@ -153,7 +153,7 @@ function yyUnhandledExceptionHandler( event )
 {
 	if ((g_GMLUnhandledExceptionHandler == undefined) || !(g_GMLUnhandledExceptionHandler instanceof Function)) {
 		var string = "Unhandled Exception - " + event.message + " in file " + event.filename + " at line " + event.lineno ;
-		print( string );
+		console.debug( string );
 		//alert( string );
 		game_end(-1);
 	} // end if
@@ -180,7 +180,7 @@ function yyUnhandledExceptionHandler( event )
 function yyUnhandledRejectionHandler( error )
 {
 	var string = "Unhandled Rejection - " + error.message;
-	print( string );
+	console.debug( string );
 	if (error && error['promise']) {
 		error['promise'].catch(function(err){
 			var _endGame = true;

@@ -20,15 +20,16 @@
 ///			 </returns>
 // #############################################################################################
 /** @constructor */
-function    yyTextureGroupInfo()
-{
-    this.__type = "[TextureGroupInfo]";
-    this.pName = "unknowntexturegroup";
-    this.textures = [];
-    this.sprites = [];
-    this.spinesprites = [];
-    this.fonts = [];
-    this.tilesets = [];
+class yyTextureGroupInfo {
+    constructor() {
+        this.__type = "[TextureGroupInfo]";
+        this.pName = "unknowntexturegroup";
+        this.textures = [];
+        this.sprites = [];
+        this.spinesprites = [];
+        this.fonts = [];
+        this.tilesets = [];
+    }
 }
 
 // #############################################################################################
@@ -41,84 +42,71 @@ function    yyTextureGroupInfo()
 ///			 </returns>
 // #############################################################################################
 /** @constructor */
-function    yyTextureGroupInfoManager()
-{
-    this.TextureGroupInfo = [];
+class yyTextureGroupInfoManager {
+    constructor() {
+        this.TextureGroupInfo = [];
+    }
+    // #############################################################################################
+    /// Function:<summary>
+    ///             Add a texture to the "pool"
+    ///          </summary>
+    ///
+    /// In:		 <param name="_name">Name+path of texture to load</param>
+    /// Out:	 <returns>
+    ///				
+    ///			 </returns>
+    // #############################################################################################
+    AddTextureGroupInfo(_pTGInfo) {
+        var n = this.TextureGroupInfo.length;
+        this.TextureGroupInfo[n] = _pTGInfo;
+        return n;
+    }
+    Find(_pName) {
+        for (var i = 0; i < this.TextureGroupInfo.length; i++) {
+            if (this.TextureGroupInfo[i].pName == _pName) {
+                return this.TextureGroupInfo[i];
+            }
+        }
+
+        return null;
+    }
+    FindTex(_texid) {
+        for (var i = 0; i < this.TextureGroupInfo.length; i++) {
+            var pTGInfo = this.TextureGroupInfo[i];
+            for (var j = 0; j < pTGInfo.textures.length; j++) {
+                if (pTGInfo.textures[j] == _texid) {
+                    return pTGInfo;
+                }
+            }
+        }
+
+        return null;
+    }
+    FindGLTex(_gltex) {
+        for (var i = 0; i < this.TextureGroupInfo.length; i++) {
+            var pTGInfo = this.TextureGroupInfo[i];
+            for (var j = 0; j < pTGInfo.textures.length; j++) {
+                if (g_Textures[pTGInfo.textures[j]]) {
+                    var tex = g_Textures[pTGInfo.textures[j]];
+
+                    if (tex.webgl_textureid) {
+                        if (tex.webgl_textureid === _gltex) {
+                            return pTGInfo;
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
 }
 
 
 
-// #############################################################################################
-/// Function:<summary>
-///             Add a texture to the "pool"
-///          </summary>
-///
-/// In:		 <param name="_name">Name+path of texture to load</param>
-/// Out:	 <returns>
-///				
-///			 </returns>
-// #############################################################################################
-yyTextureGroupInfoManager.prototype.AddTextureGroupInfo = function (_pTGInfo)
-{
-	var n = this.TextureGroupInfo.length;
-	this.TextureGroupInfo[n] = _pTGInfo;
-	return n;
-};
 
-yyTextureGroupInfoManager.prototype.Find = function(_pName)
-{
-    for(var i = 0; i < this.TextureGroupInfo.length; i++)
-    {
-        if (this.TextureGroupInfo[i].pName == _pName)
-        {
-            return this.TextureGroupInfo[i];
-        }
-    }
 
-    return null;
-};
 
-yyTextureGroupInfoManager.prototype.FindTex = function(_texid)
-{
-    for(var i = 0; i < this.TextureGroupInfo.length; i++)
-    {
-        var pTGInfo = this.TextureGroupInfo[i];
-        for(var j = 0; j < pTGInfo.textures.length; j++)
-        {
-            if (pTGInfo.textures[j] == _texid)
-            {
-                return pTGInfo;
-            }
-        }        
-    }
-
-    return null;
-};
-
-yyTextureGroupInfoManager.prototype.FindGLTex = function(_gltex)
-{
-    for(var i = 0; i < this.TextureGroupInfo.length; i++)
-    {
-        var pTGInfo = this.TextureGroupInfo[i];
-        for(var j = 0; j < pTGInfo.textures.length; j++)
-        {
-            if (g_Textures[pTGInfo.textures[j]])
-            {
-                var tex = g_Textures[pTGInfo.textures[j]];
-
-                if (tex.webgl_textureid)
-                {
-                    if (tex.webgl_textureid === _gltex)
-                    {
-                        return pTGInfo;
-                    }
-                }
-            }            
-        }        
-    }
-
-    return null;
-};
 
 function _getWebGLTex(_tex_id)
 {
