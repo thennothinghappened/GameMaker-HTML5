@@ -234,7 +234,7 @@ class yyFont {
 
     /**
      * Create a font from storage
-     * @param {yyFontFromStorage} _pStorage 
+     * @param {YYFontFromStorage} _pStorage 
      */
     CreateFromStorage(_pStorage) {
 

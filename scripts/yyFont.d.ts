@@ -1,5 +1,5 @@
 
-declare type yyFontFromStorage = {
+declare type YYFontFromStorage = {
     
     pName: string;
     fontname: string;

@@ -3579,43 +3579,51 @@ function ConvertImageIndexToSequencePos(pInst, sprite, image_index)
 ///			</returns>
 // #############################################################################################
 var yyInst = yyInst_DEBUG;
-function yyInst_RELEASE(_inst, _other, _id) {
-	if (_id instanceof YYRef) {
-		_id = yyGetInt32(_id);
+
+function yyInst_RELEASE(inst, other, id) {
+	if (id instanceof YYRef) {
+		id = yyGetInt32(id);
 	} else {
-		if (typeof _id === "object" || typeof _id === "function" ) return _id;
+		if (typeof id === "object" || typeof id === "function" ) return id;
 	}
-    if (_id == -1) return _inst;
-    if (_id == -2) return _other;
-    if (_id == -3) return _inst;
-    var pInst = g_pInstanceManager.Get(_id);
+    if (id == -1) return inst;
+    if (id == -2) return other;
+    if (id == -3) return inst;
+    var pInst = g_pInstanceManager.Get(id);
 	if( !pInst ) {
-	    pInst = g_pObjectManager.Get(_id);
+	    pInst = g_pObjectManager.Get(id);
 	    if( pInst ) pInst = pInst.Instances.Get(0);
     }
 	return pInst;
 }
 
-function yyInst_DEBUG(_inst, _other, _id) {
-	if (_id instanceof YYRef) {
-		_id = yyGetInt32(_id);
-	} else {
-		if (typeof _id === "object" || typeof _id === "function" ) return _id;
-	}
-    if (_id == -1) return _inst;
-    if (_id == -2) return _other;
-    if (_id == -3) return _inst;
-    var pInst = g_pInstanceManager.Get(_id);
-	if( !pInst ) {
+function yyInst_DEBUG(inst, other, id) {
 
-	    pInst = g_pObjectManager.Get(_id);
-	    if( !pInst ) {
-	        ErrorOnce("Unknown instance ID: "+_id);
+	if (id instanceof YYRef) {
+		id = yyGetInt32(id);
+	} else if (typeof id === "object" || typeof id === "function") {
+        return id;
+    }
+	
+    if (id == -1) return inst;
+    if (id == -2) return other;
+    if (id == -3) return inst;
+
+    var pInst = g_pInstanceManager.Get(id);
+
+	if(!pInst) {
+
+	    pInst = g_pObjectManager.Get(id);
+
+	    if(!pInst) {
+	        ErrorOnce("Unknown instance ID: "+id);
 	        debug(stacktrace());
 	        return undefined;
 	    }
+
 	    pInst = pInst.Instances.Get(0);
     }
+    
 	return pInst;
 }
 

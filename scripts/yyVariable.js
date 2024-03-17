@@ -225,30 +225,33 @@ function __yy_method( _inst, _func )
 }
 
 /**
- * @param {*} struct_ref_or_instance_id 
- * @param {yyUserFunction|number} func 
+ * @param {number|YYRef|YYUserFunction|Function} structRefOrInstanceId 
+ * @param {YYUserFunction|number} func 
  * @returns 
  */
-function method(struct_ref_or_instance_id, func)
-{
-    if (typeof func === "number")
-    {
-        func = JSON_game.Scripts[func - 100000];
+function method(structRefOrInstanceId, func) {
+
+    const userFunctionOffset = 100000;
+
+    if (typeof func === "number") {
+        func = JSON_game.Scripts[func - userFunctionOffset];
     }
     
-    if ((typeof struct_ref_or_instance_id == "number") || (struct_ref_or_instance_id instanceof YYRef))
-    {
-        struct_ref_or_instance_id = yyInst(null, null, struct_ref_or_instance_id);
+    if ((typeof structRefOrInstanceId == "number") || (structRefOrInstanceId instanceof YYRef)) {
+        structRefOrInstanceId = yyInst(null, null, structRefOrInstanceId);
     }
 
-    if (!(func instanceof Function)) yyError("method : argument needs to be a function");
+    if (!(func instanceof Function)) {
+        return yyError("method : argument needs to be a function");
+    }
+
     if (func.__yy_userFunction) {
         func = func.origfunc ? func.origfunc : func;
         var ret = func;
-        if ((struct_ref_or_instance_id == undefined) || (struct_ref_or_instance_id == null)) {
-            ret = func.bind(struct_ref_or_instance_id);
+        if ((structRefOrInstanceId == undefined) || (structRefOrInstanceId == null)) {
+            ret = func.bind(structRefOrInstanceId);
         } else {
-            var a = { func : func, inst : struct_ref_or_instance_id };
+            var a = { func : func, inst : structRefOrInstanceId };
             var newfunc = function() {
                 var newArgs = Array.prototype.slice.call(arguments);
                 newArgs[0] = this.inst;
@@ -256,7 +259,7 @@ function method(struct_ref_or_instance_id, func)
             };        
             ret = newfunc.bind(a);
         }
-        ret.boundObject = struct_ref_or_instance_id;
+        ret.boundObject = structRefOrInstanceId;
         ret.origfunc = func.origfunc === undefined ? func : func.origfunc;           // in case we want to use the method with a different "this"
         ret.__yy_userFunction = true;
         //Object.setPrototypeOf( newfunc, newfunc.origfunc.prototype);
@@ -266,7 +269,7 @@ function method(struct_ref_or_instance_id, func)
         var ret = undefined;
         if (func.origfunc) func = func.origfunc;
         if (func.__yy_bothSelfAndOther) {
-            ret = func.bind(struct_ref_or_instance_id);
+            ret = func.bind(structRefOrInstanceId);
         }
         else {
             var a = { func : func };
@@ -286,7 +289,7 @@ function method(struct_ref_or_instance_id, func)
                 };
             } // end else
             ret = newfunc.bind(a);
-            ret.boundObject = struct_ref_or_instance_id;
+            ret.boundObject = structRefOrInstanceId;
             ret.origfunc = func.origfunc === undefined ? func : func.origfunc;           // in case we want to use the method with a different "this"
         } // end else
         return ret;

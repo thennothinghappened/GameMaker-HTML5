@@ -14,89 +14,125 @@
 // 
 // **********************************************************************************************************************
 
-// #############################################################################################
-/// Function:<summary>
-///             Constructor for the yyWeakRef object 
-///          </summary>
-// #############################################################################################
-/** @constructor */
+/**
+ * Whether the browser supports {@link WeakRef}
+ */
+const WEAKREF_SUPPORTED = ('WeakRef' in window);
+
+/**
+ * Constructor for the yyWeakRef object
+ */
 class yyWeakRef {
-    constructor() {
-        this.__yyIsGMLObject = true;
-        this.__type = "[weakref]";
 
-        this.pWeakRef = null;
+    /** @type {boolean} */
+    __yyIsGMLObject = true;
 
-        this.IsRefAlive = function () {
+    /** @type {string} */
+    __type = "[weakref]";
+
+    /** @type {WeakRef<Object>?} */
+    pWeakRef = null;
+
+    gmlref = {
+        enumerable: true,
+        get: () => {
+
             if (this.pWeakRef == null) {
                 return undefined;
             }
-            else if (this.pWeakRef.deref() == undefined) {
-                return false;
-            }
 
-            return true;
-        };
+            return this.pWeakRef.deref();
+        }
+    };
 
-        this.SetReference = function (_pRef) {
-            if (typeof WeakRef === "undefined") {
-                this.pWeakRef = null;
-            }
+    constructor() {}
 
-            else {
-                this.pWeakRef = new WeakRef(_pRef);
-            }
+    /**
+     * Returns whether the weak reference is still alive.
+     * @returns {boolean|undefined}
+     */
+    IsRefAlive = () => {
 
-        };
+        if (this.pWeakRef == null) {
+            return undefined;
+        }
 
-        Object.defineProperties(this, {
-            gmlref: {
-                enumerable: true,
-                get: function () { return (this.pWeakRef == null) ? undefined : ((this.pWeakRef.deref() == undefined) ? undefined : this.pWeakRef.deref()); }
-            }
-        });
-    }
+        if (this.pWeakRef.deref() == undefined) {
+            return false;
+        }
+
+        return true;
+    };
+
+    /**
+     * 
+     * @param {Object} pRef 
+     */
+    SetReference = (pRef) => {
+
+        if (!WEAKREF_SUPPORTED) {
+            this.pWeakRef = null;
+            return;
+        }
+
+        this.pWeakRef = new WeakRef(pRef);
+        
+    };
+
+
 }
 
-function weak_ref_create(_pRef)
-{
-    if (_pRef != undefined)
-    {
-        if ((typeof (_pRef) == "object") || (typeof (_pRef) == "function"))
-        {
-            var weakref = new yyWeakRef();
-            weakref.SetReference(_pRef);
-            return weakref;
-        }
-        else
-        {
-            yyError("invalid argument passed to weak_ref_create");
-        }
-    }
-    else
-    {
+/**
+ * With this function you can create a weak reference to a struct which can then be used to check if
+ * the struct is still "alive" (referenced) or not in the game. You supply the reference to the
+ * struct you want to track, and the function will return another struct which is a weak reference
+ * to that struct.
+ * 
+ * @param {Object|Function} structToTrack 
+ * @returns {yyWeakRef}
+ */
+function weak_ref_create(structToTrack) {
+
+    if (structToTrack == undefined) {
         yyError("incorrect number of arguments to weak_ref_create");
     }
-   
-    return undefined;
+        
+    if ((typeof structToTrack != "object") && (typeof (structToTrack) != "function")) {
+        yyError("invalid argument passed to weak_ref_create");
+    }
+
+    var weakref = new yyWeakRef();
+    weakref.SetReference(structToTrack);
+
+    return weakref;
+
 }
 
-function weak_ref_alive(_pWeakRef)
-{
-    if (_pWeakRef != undefined)
-    {
-        if ((typeof (_pWeakRef) == "object") && (_pWeakRef.__type != undefined) && (_pWeakRef.__type == "[weakref]"))
-        {
-            return _pWeakRef.IsRefAlive();
-        }
-        return undefined;
-    }
-    else
-    {
+/**
+ * @param {yyWeakRef} pWeakRef 
+ * @returns 
+ */
+function weak_ref_alive(pWeakRef) {
+
+    if (pWeakRef == undefined) {
         yyError("incorrect number of arguments to weak_ref_alive");
     }
+
+    if (pWeakRef instanceof yyWeakRef) {
+        return pWeakRef.IsRefAlive();
+    }
+
+    return undefined;
+    
 }
 
+/**
+ * 
+ * @param {Array<yyWeakRef>} _array Array containing weak references to the structs that you want to check.
+ * @param {number} [_index] The index into the array to start checking from.
+ * @param {number} [_length] The number of positions, starting from the given index, to check for.
+ * @returns {boolean|undefined}
+ */
 function weak_ref_any_alive(_array, _index, _length)
 {
     if (_array == undefined)

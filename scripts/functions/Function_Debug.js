@@ -98,19 +98,20 @@ function debug(text)
 //    }
 //}
 
-function YYErrorObject( _message, _longMessage, _script, _line, _stackTrace )
-{
-    this.gmlmessage = _message;
-    this.gmllongMessage = _longMessage;
-    this.gmlstacktrace = _stackTrace;
-    this.gmlscript = _script;
-    this.gmlline = _line;
-    this.__yyIsGMLObject = true;
+class YYErrorObject {
+    constructor(_message, _longMessage, _script, _line, _stackTrace) {
+        this.gmlmessage = _message;
+        this.gmllongMessage = _longMessage;
+        this.gmlstacktrace = _stackTrace;
+        this.gmlscript = _script;
+        this.gmlline = _line;
+        this.__yyIsGMLObject = true;
+    }
+    toString() {
+        return yyGetString(this);
+    }
 }
 
-YYErrorObject.prototype.toString = function () {
-    return yyGetString(this);
-};
 
 function __yy__processException( _ex )
 {
@@ -130,16 +131,18 @@ function __yy__processException( _ex )
 }
 
 
-// #############################################################################################
-/// Function:<summary>
-///          	Console out debug text
-///          </summary>
-// #############################################################################################
+/**
+ * Throw a runtime error.
+ * 
+ * @param {string} text 
+ * @throws
+ * @returns {never}
+ */
 function yyError(text) {
     var index;
 
     var stacktraceArray = getStacktraceArray();
-    var exObj = new YYErrorObject( text, text, ExtractFunctionName(yyError.caller.name), -1, stacktraceArray ); 
+    var exObj = new YYErrorObject(text, text, ExtractFunctionName(yyError.caller.name), -1, stacktraceArray);
 
     throw exObj;
 }
@@ -878,10 +881,12 @@ function createMessageDialog( _dialogData )
 ///          </summary>
 // #############################################################################################
 /** @constructor */
-function yyDialogData( _id, _type, _strings ) {
-    this.id = _id;
-    this.type = _type;
-    this.strings = _strings;
+class yyDialogData {
+    constructor(_id, _type, _strings) {
+        this.id = _id;
+        this.type = _type;
+        this.strings = _strings;
+    }
 }
 
 // #############################################################################################
@@ -1136,6 +1141,7 @@ function stacktrace(_error) {
 
     var f = arguments.callee.caller;
     var str = "Error: " + _error + "\n" + "--------------------------------------------------------------------\n";
+
     while (f) {
         var name = "\t"+ExtractFunctionName(f.toString());
         str += name + '(';

@@ -428,31 +428,40 @@ function yyGetBool(v) {
 
 }
 
-function yyGetRef(_value, _ref, _maxNum, _array, _allowOutOfRange) {
+/**
+ * 
+ * @param {*} value 
+ * @param {number} refId 
+ * @param {*} _maxNum 
+ * @param {*} _array 
+ * @param {*} _allowOutOfRange 
+ * @returns 
+ */
+function yyGetRef(value, refId, _maxNum, _array, _allowOutOfRange) {
 
     var ret = -1;
 
-    if (_value instanceof YYRef) {
+    if (value instanceof YYRef) {
 
-        var type = _value.type;
+        var type = value.type;
 
-        if (type != _ref) {
+        if (type != refId) {
 
             if (!_allowOutOfRange) {
-                yyError("incorrect type (" + RefName(type) + ") expecting a " + RefName(_ref));
+                yyError("incorrect type (" + RefName(type) + ") expecting a " + RefName(refId));
             }
 
         } else {
-            ret = _value.value;
+            ret = value.value;
         }
 
     } else {
-        ret = yyGetInt32(_value);
+        ret = yyGetInt32(value);
     }
 
     if (!_allowOutOfRange) {
         if (ret < 0 || ret >= _maxNum || (_array && !_array[ret])) {
-            yyError("invalid reference to (" + RefName(_ref) + ")");
+            yyError("invalid reference to (" + RefName(refId) + ")");
         }
     }
 

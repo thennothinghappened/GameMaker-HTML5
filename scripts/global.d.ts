@@ -1,5 +1,5 @@
 
-declare type yyJSONGame = {
+declare type YYJSONGame = {
 
     AnimCurves: Array;
 
@@ -16,11 +16,11 @@ declare type yyJSONGame = {
     
     FiltersAndEffectDefs: Array;
     
-    Fonts: Array<yyFontFromStorage>;
+    Fonts: Array<YYFontFromStorage>;
 
-    GMObjects: Array<yyGMObject>;
+    GMObjects: Array<YYGMObject>;
 
 };
 
-declare var JSON_game: yyJSONGame;
-declare var g_pGMFile: yyJSONGame;
+declare var JSON_game: YYJSONGame;
+declare var g_pGMFile: YYJSONGame;
