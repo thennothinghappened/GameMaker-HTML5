@@ -1,7 +1,7 @@
 module.exports = {
     "env": {
         "browser": true,
-        "es6": false
+        "es6": true
     },
     "extends": "eslint:recommended",
     "globals": {
@@ -25,6 +25,8 @@ module.exports = {
         'no-constant-condition': 1,
         'no-inner-declarations': 0,
         'no-func-assign': 0,
-        'no-cond-assign': 0
+        'no-cond-assign': 0,
+        'no-lonely-if': 1,
+        'curly': 1
     }
 };

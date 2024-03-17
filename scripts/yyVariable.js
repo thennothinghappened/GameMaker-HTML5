@@ -350,43 +350,43 @@ function method_get_self( _method )
     return undefined;
 }
 
-function method_get_index( _method )
-{
-    if (typeof _method === "function") {
+function method_get_index(method) {
 
-        if(_method.origfunc !== undefined)
-        {
-            // if the name is not a script then lets try the global scripts
-            if (_method.origfunc.__yy_scriptIndex !== undefined) {
-                return _method.origfunc.__yy_scriptIndex;
-            } // end if
+    if (typeof method !== "function") {
+        return undefined;
+    }
 
-            // look through all the scripts and find the original function in the 
-            var scriptIndex = JSON_game.Scripts.indexOf(_method.origfunc);
-            if(scriptIndex != -1)
-            {
-                return scriptIndex + 100000;
-            }
-        }
-        else
+    if (method.origfunc !== undefined)
+    {
+        // if the name is not a script then lets try the global scripts
+        if (method.origfunc.__yy_scriptIndex !== undefined) {
+            return method.origfunc.__yy_scriptIndex;
+        } // end if
+
+        // look through all the scripts and find the original function in the 
+        var scriptIndex = JSON_game.Scripts.indexOf(method.origfunc);
+        if(scriptIndex != -1)
         {
-            // Check whether script exists within user defined scripts and return its index if so
-            var scriptIndex = JSON_game.Scripts.indexOf(_method);
-            if(scriptIndex != -1)
-            {
-                return scriptIndex + 100000;
-            }
+            return scriptIndex + 100000;
         }
-        
-        // Check whether script exists within global scripts and return its index if so
-        global_scripts_init();
-        var globalScriptIndex = g_globalScripts.indexOf(_method);
-        if(globalScriptIndex != -1)
+    }
+    else
+    {
+        // Check whether script exists within user defined scripts and return its index if so
+        var scriptIndex = JSON_game.Scripts.indexOf(method);
+        if(scriptIndex != -1)
         {
-            return globalScriptIndex + 100000;
+            return scriptIndex + 100000;
         }
-    } // end if
-    return undefined;
+    }
+    
+    // Check whether script exists within global scripts and return its index if so
+    global_scripts_init();
+    var globalScriptIndex = g_globalScripts.indexOf(method);
+    if(globalScriptIndex != -1)
+    {
+        return globalScriptIndex + 100000;
+    }
 }
 
 function __yy_gml_is_typed_array(_a) {

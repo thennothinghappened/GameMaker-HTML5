@@ -14,74 +14,96 @@
 // 
 // **********************************************************************************************************************
 
-var AT_None = -1,
-    AT_Object = 0,
-    AT_Sprite = 1,
-    AT_Sound = 2,
-    AT_Room = 3,
-    AT_Path = 4,
-    AT_Script = 5,
-    AT_Font = 6,
-    AT_Timeline = 7,
-    AT_Shader = 8,
-    AT_Sequence = 9,
-    AT_AnimCurve = 10,
-    AT_ParticleSystem = 11,
-    AT_Tilemap = 12,
-    AT_Tileset = 13;
+var AT_None             = -1,
+    AT_Object           = 0,
+    AT_Sprite           = 1,
+    AT_Sound            = 2,
+    AT_Room             = 3,
+    AT_Path             = 4,
+    AT_Script           = 5,
+    AT_Font             = 6,
+    AT_Timeline         = 7,
+    AT_Shader           = 8,
+    AT_Sequence         = 9,
+    AT_AnimCurve        = 10,
+    AT_ParticleSystem   = 11,
+    AT_Tilemap          = 12,
+    AT_Tileset          = 13;
 
-var REFCAT_RESOURCE = 0x01000000;
-var REFCAT_DATA_STRUCTURE = 0x02000000;
-var REFCAT_INSTANCE = 0x04000000;
-var REFCAT_GENERAL = 0x08000000;
+var REFCAT_RESOURCE         = 0x01000000;
+var REFCAT_DATA_STRUCTURE   = 0x02000000;
+var REFCAT_INSTANCE         = 0x04000000;
+var REFCAT_GENERAL          = 0x08000000;
 
 // Runtime instances of resources
-var REFID_INSTANCE = (0x00000001 | REFCAT_INSTANCE);
-var REFID_DBG = (0x00000002 | REFCAT_INSTANCE);
-var REFID_PART_SYSTEM = (0x00000004 | REFCAT_INSTANCE);
-var REFID_PART_EMITTER = (0x00000008 | REFCAT_INSTANCE);
-var REFID_PART_TYPE = (0x00000010 | REFCAT_INSTANCE);
+var REFID_INSTANCE          = (0x00000001 | REFCAT_INSTANCE);
+var REFID_DBG               = (0x00000002 | REFCAT_INSTANCE);
+var REFID_PART_SYSTEM       = (0x00000004 | REFCAT_INSTANCE);
+var REFID_PART_EMITTER      = (0x00000008 | REFCAT_INSTANCE);
+var REFID_PART_TYPE         = (0x00000010 | REFCAT_INSTANCE);
 
 // 
-var REFID_OBJECT = (AT_Object | REFCAT_RESOURCE);
-var REFID_SPRITE = (AT_Sprite | REFCAT_RESOURCE);
-var REFID_SOUND = (AT_Sound | REFCAT_RESOURCE);
-var REFID_ROOM = (AT_Room | REFCAT_RESOURCE);
-var REFID_PATH = (AT_Path | REFCAT_RESOURCE);
-var REFID_SCRIPT = (AT_Script | REFCAT_RESOURCE);
-var REFID_FONT = (AT_Font | REFCAT_RESOURCE);
-var REFID_TIMELINE = (AT_Timeline | REFCAT_RESOURCE);
-var REFID_SHADER = (AT_Shader | REFCAT_RESOURCE);
-var REFID_SEQUENCE = (AT_Sequence | REFCAT_RESOURCE);
-var REFID_ANIMCURVE = (AT_AnimCurve | REFCAT_RESOURCE);
-var REFID_PARTICLESYSTEM = (AT_ParticleSystem | REFCAT_RESOURCE);
-var REFID_TILEMAP = (AT_Tilemap | REFCAT_RESOURCE);
-var REFID_TILESET = (AT_Tileset | REFCAT_RESOURCE);
+var REFID_OBJECT            = (AT_Object | REFCAT_RESOURCE);
+var REFID_SPRITE            = (AT_Sprite | REFCAT_RESOURCE);
+var REFID_SOUND             = (AT_Sound | REFCAT_RESOURCE);
+var REFID_ROOM              = (AT_Room | REFCAT_RESOURCE);
+var REFID_PATH              = (AT_Path | REFCAT_RESOURCE);
+var REFID_SCRIPT            = (AT_Script | REFCAT_RESOURCE);
+var REFID_FONT              = (AT_Font | REFCAT_RESOURCE);
+var REFID_TIMELINE          = (AT_Timeline | REFCAT_RESOURCE);
+var REFID_SHADER            = (AT_Shader | REFCAT_RESOURCE);
+var REFID_SEQUENCE          = (AT_Sequence | REFCAT_RESOURCE);
+var REFID_ANIMCURVE         = (AT_AnimCurve | REFCAT_RESOURCE);
+var REFID_PARTICLESYSTEM    = (AT_ParticleSystem | REFCAT_RESOURCE);
+var REFID_TILEMAP           = (AT_Tilemap | REFCAT_RESOURCE);
+var REFID_TILESET           = (AT_Tileset | REFCAT_RESOURCE);
 
-var REFID_DS_LIST = (0x00000001 | REFCAT_DATA_STRUCTURE);
-var REFID_DS_MAP = (0x00000002 | REFCAT_DATA_STRUCTURE);
-var REFID_DS_GRID = (0x00000004 | REFCAT_DATA_STRUCTURE);
-var REFID_DS_QUEUE = (0x00000008 | REFCAT_DATA_STRUCTURE);
-var REFID_DS_STACK = (0x00000010 | REFCAT_DATA_STRUCTURE);
-var REFID_DS_PRIORITY = (0x00000020 | REFCAT_DATA_STRUCTURE);
+/// DS types
+var REFID_DS_LIST           = (0x00000001 | REFCAT_DATA_STRUCTURE);
+var REFID_DS_MAP            = (0x00000002 | REFCAT_DATA_STRUCTURE);
+var REFID_DS_GRID           = (0x00000004 | REFCAT_DATA_STRUCTURE);
+var REFID_DS_QUEUE          = (0x00000008 | REFCAT_DATA_STRUCTURE);
+var REFID_DS_STACK          = (0x00000010 | REFCAT_DATA_STRUCTURE);
+var REFID_DS_PRIORITY       = (0x00000020 | REFCAT_DATA_STRUCTURE);
 
+/// Buffer types
+var REFID_BUFFER            = (0x00000001 | REFCAT_GENERAL);
+var REFID_VERTEX_BUFFER     = (0x00000002 | REFCAT_GENERAL);
+var REFID_VERTEX_FORMAT     = (0x00000003 | REFCAT_GENERAL);
 
-var REFID_BUFFER = (0x00000001 | REFCAT_GENERAL);
-var REFID_VERTEX_BUFFER = (0x00000002 | REFCAT_GENERAL);
-var REFID_VERTEX_FORMAT = (0x00000003 | REFCAT_GENERAL);
-var REFID_SURFACE = (0x00000004 | REFCAT_GENERAL);
-var REFID_TIME_SOURCE = (0x00000005 | REFCAT_GENERAL);
+/// GPU surface type
+var REFID_SURFACE           = (0x00000004 | REFCAT_GENERAL);
 
+/// Time sources
+var REFID_TIME_SOURCE       = (0x00000005 | REFCAT_GENERAL);
 
+/**
+ * Reference type
+ */
 class YYRef {
+
+    /**
+     * 
+     * @param {number} type 
+     * @param {number} value 
+     */
     constructor(type, value) {
         this.type = type;
         this.value = value;
     }
 }
 
-function MAKE_REF(a, b) {
-    return new YYRef(a, b);
+/**
+ * Instantiate a new reference.
+ * 
+ * TODO: why not just call `new YYRef(a, b)` directly?
+ * 
+ * @param {number} type 
+ * @param {number} value 
+ * @returns {YYRef}
+ */
+function MAKE_REF(type, value) {
+    return new YYRef(type, value);
 }
 
 function YYASSET_REF(v) {
@@ -135,161 +157,198 @@ var g_name2ref = [
 
 
 function RefName(_ref) {
+
     var pRet = "unknown";
+
     for (var n = 0; n < g_name2ref.length; ++n) {
+        
         if (g_name2ref[n].type == _ref) {
             pRet = g_name2ref[n].name;
             break;
         }
     }
+
     return pRet;
 }
 
 function Name2Ref(_name) {
+
     var pRet = -1;
+
     for (var n = 0; n < g_name2ref.length; ++n) {
+
         if (g_name2ref[n].name == _name) {
             pRet = g_name2ref[n].type;
             break;
-        } // end if
-    } // end for
+        }
+    }
+
     return pRet;
 }
 
-// #############################################################################################
-/// Function:<summary>
-///				Converts the given type to a real number if required and returns the result.
-///          </summary>
-///
-/// In:		 <param name="_v">The value to convert</param>
-/// Out:	 <returns>
-///				The given type as a real number value
-///			 </returns>
-// #############################################################################################
-function yyGetReal(_v) {
-    if (_v instanceof YYRef)
-        return _v.value;
-    else if (typeof _v === "number")
-        return _v;
-    else if (typeof _v === "boolean")
-        return _v ? 1 : 0;
-    else if (typeof _v === "string") {
-        _v = _v.trim();
-        var match = _v.match(g_NumberRE);
+/**
+ * Converts the given type to a real number if required and returns the result.
+ * 
+ * @param {*} v The value to convert
+ * @returns {number} The given type as a real number value
+ */
+function yyGetReal(v) {
+    
+    if (v instanceof YYRef) {
+        return v.value;
+    }
+
+    if (typeof v === "number") {
+        return v;
+    }
+
+    if (typeof v === "boolean") {
+        return v ? 1 : 0;
+    }
+
+    if (typeof v === "string") {
+        
+        v = v.trim();
+        var match = v.match(g_NumberRE);
+
         if (match != null) {
             return Number(match);
-        } // end if
-    }
-    else if (typeof _v === "object") {
-        if (_v instanceof Long) {
-            return _v.toNumber();
         }
-        else
-            if (!(_v instanceof Array) && !(_v instanceof ArrayBuffer)) {
-                if (_v.id !== undefined) {
-                    return _v.id;
-                } // end if
-                return Number(_v);
-            } // end if
+
+    } else if (typeof v === "object") {
+
+        if (v instanceof Long) {
+            return v.toNumber();
+        }
+
+        if (!(v instanceof Array) && !(v instanceof ArrayBuffer)) {
+
+            if (v.id !== undefined) {
+                return v.id;
+            }
+            return Number(v);
+        }
     }
-    else if (typeof _v === "function") {
-        var methodIndex = method_get_index(_v);
+    else if (typeof v === "function") {
+        var methodIndex = method_get_index(v);
         if (methodIndex !== undefined) {
             return methodIndex;
         }
     }
-    yyError("unable to convert " + string(_v) + " to a number");
+
+    yyError("unable to convert " + string(v) + " to a number");
     return 0;
 }
 
-// #############################################################################################
-/// Function:<summary>
-///				Converts the given type to a long number if required and returns the result.
-///          </summary>
-///
-/// In:		 <param name="_v">The value to convert</param>
-/// Out:	 <returns>
-///				The given type as a long number value
-///			 </returns>
-// #############################################################################################
-function yyGetInt64(_v) {
-    if (_v instanceof YYRef)
-        return _v.value;
-    else if (typeof _v === "number")
-        return Long.fromValue(_v, false);
-    else if (typeof _v === "boolean")
-        return Long.fromValue(_v ? 1 : 0, false);
-    else if (typeof _v === "string") {
-        var match = _v.match(g_NumberRE);
+/**
+ * Converts the given type to a long number if required and returns the result.
+ * 
+ * @param {*} v The value to convert
+ * @returns {Long} The given type as a long number value
+ */
+function yyGetInt64(v) {
+
+    if (v instanceof YYRef) {
+        return v.value;
+    }
+
+    if (typeof v === "number") {
+        return Long.fromValue(v, false);
+    }
+
+    if (typeof v === "boolean") {
+        return Long.fromValue(v ? 1 : 0, false);
+    }
+
+    if (typeof v === "string") {
+
+        var match = v.match(g_NumberRE);
+
         if (match != null) {
             return Long.fromValue(Number(match), false);
-        } // end if
-    }
-    else if (typeof _v === "object") {
-        if (_v instanceof Long) {
-            return _v;
         }
-        else
-            if (!(_v instanceof Array) && !(_v instanceof ArrayBuffer)) {
-                if (_v.id !== undefined) {
-                    return Long.fromValue(_v.id, false);
-                } // end if
-                return Long.fromValue(Number(_v), false);
-            } // end if
-    }
-    else if (typeof _v === "function") {
-        var methodIndex = method_get_index(_v);
+
+    } else if (typeof v === "object") {
+
+        if (v instanceof Long) {
+            return v;
+        }
+
+        if (!(v instanceof Array) && !(v instanceof ArrayBuffer)) {
+            
+            if (v.id !== undefined) {
+                return Long.fromValue(v.id, false);
+            }
+
+            return Long.fromValue(Number(v), false);
+        }
+
+    } else if (typeof v === "function") {
+
+        var methodIndex = method_get_index(v);
+
         if (methodIndex !== undefined) {
             return methodIndex;
         }
     }
-    yyError("unable to convert " + string(_v) + " to a number");
+
+    yyError("unable to convert " + string(v) + " to a number");
     return 0;
-} // end function
+}
 
+/**
+ * Converts the given type to an int32 number if required and returns the result.
+ * 
+ * @param {*} v The value to convert
+ * @returns {number} The given type as an int32 number value
+ */
+function yyGetInt32(v) {
 
-// #############################################################################################
-/// Function:<summary>
-///				Converts the given type to an int32 number if required and returns the result.
-///          </summary>
-///
-/// In:		 <param name="_v">The value to convert</param>
-/// Out:	 <returns>
-///				The given type as an int32 number value
-///			 </returns>
-// #############################################################################################
-function yyGetInt32(_v) {
-    if (_v instanceof YYRef)
-        return _v.value;
-    else if (typeof _v === "number")
-        return ~~_v;
-    else if (typeof _v === "boolean")
-        return _v ? 1 : 0;
-    else if (typeof _v === "string") {
-        var match = _v.match(g_NumberRE);
+    if (v instanceof YYRef) {
+        return v.value;
+    }
+        
+    if (typeof v === "number") {
+        return ~~v;
+    }
+
+    if (typeof v === "boolean") {
+        return v ? 1 : 0;
+    }
+
+    if (typeof v === "string") {
+        
+        var match = v.match(g_NumberRE);
+        
         if (match != null) {
             return ~~Number(match);
-        } // end if
-    } // end if
-    else if (typeof _v === "object") {
-        if (_v instanceof Long) {
-            return _v.toInt();
         }
-        else
-            if (!(_v instanceof Array) && !(_v instanceof ArrayBuffer)) {
-                if (_v.id !== undefined) {
-                    return _v.id;
-                } // end if
-                return ~~Number(_v);
-            } // end if
-    } // end if
-    else if (typeof _v === "function") {
-        var methodIndex = method_get_index(_v);
+
+    } else if (typeof v === "object") {
+
+        if (v instanceof Long) {
+            return v.toInt();
+        }
+
+        if (!(v instanceof Array) && !(v instanceof ArrayBuffer)) {
+            
+            if (v.id !== undefined) {
+                return v.id;
+            }
+
+            return ~~Number(v);
+        }
+
+    } else if (typeof v === "function") {
+
+        var methodIndex = method_get_index(v);
+
         if (methodIndex !== undefined) {
             return methodIndex;
         }
     }
-    yyError("unable to convert " + string(_v) + " to a number");
+
+    yyError("unable to convert " + string(v) + " to a number");
     return 0;
 }
 
@@ -442,9 +501,10 @@ function STRING_RemoveVisited(v) {
  * Converts the given type to a string if required and returns the result.
  * @param {*} v The value to convert
  * @returns {string} The given type as a string
+ * 
  */
 function yyGetString(v) {
-    
+
     if (v instanceof YYRef) {
         return "ref " + RefName(v.type) + " " + v.value;
     }
@@ -465,7 +525,7 @@ function yyGetString(v) {
 
         return ret;
     }
-    
+
     if (v === null) {
         return "null";
     }
@@ -499,7 +559,7 @@ function yyGetString(v) {
         }
 
         return "inf";
-        
+
     }
 
     if (typeof v === "boolean") {
@@ -507,7 +567,7 @@ function yyGetString(v) {
     }
 
     if (typeof v === "object") {
-        
+
         if (v instanceof Long) {
             return v.toString(10);
         }
@@ -562,7 +622,7 @@ function yyGetString(v) {
                     var names = __internal__get_variable_names(v, false);
 
                     for (var n = 0; n < names.length; n += 2) {
-                        
+
                         if (n != 0) {
                             retString += ", ";
                         }
