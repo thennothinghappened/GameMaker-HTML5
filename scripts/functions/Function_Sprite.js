@@ -34,6 +34,7 @@ var		MASK_PRECISE   = 0,
 function    sprite_exists( _index )
 {
 	// @if feature("sprites")
+	if (_index === undefined) return false;
 	return g_pSpriteManager.Get(yyGetInt32(_index)) != null;
 	// @else
 	return false;

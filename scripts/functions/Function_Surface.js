@@ -312,6 +312,7 @@ function surface_free_RELEASE(_id)
 // #############################################################################################
 function surface_exists(_id) 
 {
+    if (_id === undefined) return false;
     if (g_Surfaces.Get(yyGetInt32(_id)) != null) return 1; else return 0;
 }
 
