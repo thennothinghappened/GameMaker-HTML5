@@ -1444,6 +1444,7 @@ function audio_music_is_playing()
 
 function audio_exists(_id) {
 
+    if (_id === undefined) return false;
     _id = yyGetInt32(_id);
 
     //check for audio resource

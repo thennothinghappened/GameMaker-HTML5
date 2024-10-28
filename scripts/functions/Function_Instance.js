@@ -64,6 +64,7 @@ function instance_id_get(_inst, _index) {
 // #############################################################################################
 function instance_exists(_obj) 
 {
+	if (_obj === undefined) return false;
     var pObj = GetWithArray(yyGetInt32(_obj));
     if (pObj != null && pObj.length > 0)
     {    	

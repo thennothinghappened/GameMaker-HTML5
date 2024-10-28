@@ -959,7 +959,8 @@ function ds_exists(_ind, _type) {
 
 
 function script_exists(_ind)			
-{ 
+{
+    if (_ind === undefined) return false;
     _ind = yyGetInt32(_ind);
     if( _ind >= 100000 )
         _ind -= 100000;
