@@ -2264,6 +2264,15 @@ function WebGL_DrawVectorSprite_RELEASE(SWFDictionary, pObject, xorig, yorig, x,
     colvals[2] = (mulcolor >> 16) & 0xff;
     colvals[3] = (mulcolor >> 24) & 0xff;
 
+    // Get zero alpha colour for AA
+	var transmulcolor = color;
+
+	var transcolvals = [];
+	transcolvals[0] = transmulcolor & 0xff;
+	transcolvals[1] = (transmulcolor >> 8) & 0xff;
+	transcolvals[2] = (transmulcolor >> 16) & 0xff;
+	transcolvals[3] = (transmulcolor >> 24) & 0xff;	
+
     // Set up any transformation here related to pos\rot\scale
     var posMat = new Matrix();
     posMat.SetTranslation(x, y, 0.0);
@@ -2295,7 +2304,7 @@ function WebGL_DrawVectorSprite_RELEASE(SWFDictionary, pObject, xorig, yorig, x,
     var totaltris = 0,
         allowAA = true;
     
-	totaltris += Graphics_VectorSpriteDrawObject(SWFDictionary, pObject, postMat, gradTransMat, mulcolor, colvals, allowAA ? GR_SWFAAEnabled : false, TPEs);	    
+	totaltris += Graphics_VectorSpriteDrawObject(SWFDictionary, pObject, postMat, gradTransMat, mulcolor, colvals, transmulcolor, transcolvals, allowAA ? GR_SWFAAEnabled : false, TPEs);	    
 		
     // Restore render states    
     g_webGL.SetStencilEnable(false);
