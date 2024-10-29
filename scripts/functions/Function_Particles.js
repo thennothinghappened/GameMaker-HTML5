@@ -520,9 +520,12 @@ function part_system_drawit(_ind)
 	var matPos = new Matrix();
 	matPos.SetTranslation(-pSystem.xdraw, -pSystem.ydraw, 0.0);
 	
-	var matWorldNew = new Matrix();
-	matWorldNew.Multiply(matPos, matRot);
-	matWorldNew.Translation(pSystem.xdraw, pSystem.ydraw, 0.0);
+	var matParticle = new Matrix();
+	matParticle.Multiply(matPos, matRot);
+	matParticle.Translation(pSystem.xdraw, pSystem.ydraw, 0.0);
+
+    var matWorldNew = new Matrix();
+    matWorldNew.Multiply(matParticle, matWorldOld);
 
 	WebGL_SetMatrix(MATRIX_WORLD, matWorldNew);
 	ParticleSystem_SetMatrix(ps, matWorldNew);
