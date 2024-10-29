@@ -645,7 +645,7 @@ yySprite.prototype.BuildSWFData = function (_swfIndex, _xo, _yo) {
                     var pShape = null;
                     if (type === eDIType_Shape) {
                         pShape = new yySWFShape(type, id);
-                        byteOffset = pShape.BuildShapeData(dataView, byteOffset, littleEndian, this.SWFDictionaryItems);
+                        byteOffset = pShape.BuildShapeData(dataView, byteOffset, littleEndian, this.SWFDictionaryItems, false);
                     }
                     else if (type === eDIType_Bitmap) {
                         pShape = new yySWFBitmap(type, id);
@@ -925,7 +925,7 @@ yySprite.prototype.BuildVectorData = function (_vecIndex, _xo, _yo) {
                 byteOffset += 4;
 
 				this.m_VectorShape = new yySWFShape(eDIType_Shape, 0);
-				byteOffset = this.m_VectorShape.BuildShapeData(dataView, byteOffset, littleEndian, null);                
+				byteOffset = this.m_VectorShape.BuildShapeData(dataView, byteOffset, littleEndian, null, true);                
 
 				// Sort out any collision masks                
 				byteOffset = this.SetupVectorCollisionMasks(dataView, byteOffset, littleEndian);
