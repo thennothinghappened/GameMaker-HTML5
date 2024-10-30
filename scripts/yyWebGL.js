@@ -55,7 +55,9 @@ var LIGHT_TYPE_POINT =1;
 
 var GR_MarkVertCorners = false,
     GR_SWFAAEnabled = false,
-    GR_SWFAAScale = 1.0;
+    GR_SWFAAScale = 1.0,
+    GR_SVGAAEnabled = false,
+    GR_SVGAAScale = 1.0;
     
     
 // Store the set of shader programs created from the user's project
@@ -1313,7 +1315,7 @@ function WebGL_DrawSWF_RELEASE(SWFDictionary, SWFTimeline, ind, xorig, yorig, x,
     }
 	
     // Get colour bytes
-    var mulcolor = (color | ((alpha * 255) & 0xff) << 24);
+    var mulcolor = ((color & 0x00ffffff) | ((alpha * 255) & 0xff) << 24);
 
     var colvals = [];
     colvals[0] = mulcolor & 0xff;
@@ -1322,7 +1324,7 @@ function WebGL_DrawSWF_RELEASE(SWFDictionary, SWFTimeline, ind, xorig, yorig, x,
     colvals[3] = (mulcolor >> 24) & 0xff;
 
     // Get zero alpha colour for AA
-	var transmulcolor = color;
+	var transmulcolor = color & 0x00ffffff;
 
 	var transcolvals = [];
 	transcolvals[0] = transmulcolor & 0xff;
@@ -1489,12 +1491,12 @@ function WebGL_DrawSWFDictionaryItem(SWFDictionaryItems, _pItem, _combinedMat, _
                         if (filltype === eSWFFillType_Solid) 
                         {
                             numtris += WebGL_Draw_SolidSWFShape(
-                                null/*_pObject*/, pFillStyleData, pSubShape, _combinedMat, _colvals, _transcolvals, _colmul, _coladd, _transcoladd, _useaa);
+                                pFillStyleData, pSubShape, _combinedMat, _colvals, _transcolvals, _colmul, _coladd, _transcoladd, _useaa, _aascale);
                         }
                         else if ((filltype == eSWFFillType_Gradient) || (filltype == eSWFFillType_Bitmap)) 
                         {
                             numtris += WebGL_Draw_BitmapGradientSWFShape(
-                                SWFDictionaryItems, null/*_pObject*/, filltype, pFillStyleData, pSubShape, _gradtransmat, _combinedMat, _colvals, _transcolvals, _mulcolour, _colmul, _coladd, _transcoladd, _useaa, _TPEs);
+                                SWFDictionaryItems, filltype, pFillStyleData, pSubShape, _gradtransmat, _combinedMat, _colvals, _transcolvals, _mulcolour, _colmul, _coladd, _transcoladd, _useaa, _aascale, _TPEs);
                         }
                     }
                 }
@@ -1572,11 +1574,11 @@ function WebGL_DrawSWFDictionaryItem(SWFDictionaryItems, _pItem, _combinedMat, _
                                 y2 = (srcX2 * combinedMat.m[_12]) + (srcY2 * combinedMat.m[_22]) + combinedMat.m[_42];
 
                             // Scale offsets
-                            srcX3 *= aascale;
-                            srcY3 *= aascale;
+                            srcX3 *= _aascale;
+                            srcY3 *= _aascale;
 
-                            srcX4 *= aascale;
-                            srcY4 *= aascale;
+                            srcX4 *= _aascale;
+                            srcY4 *= _aascale;
 
                             var x3 = (srcX3 * combinedMat.m[_11]) + (srcY3 * combinedMat.m[_21]) + x1,
                                 y3 = (srcX3 * combinedMat.m[_12]) + (srcY3 * combinedMat.m[_22]) + y1,
@@ -1682,7 +1684,7 @@ function WebGL_DrawSWFObject_RELEASE(SWFDictionaryItems, _pObject, _pPostMat, _p
     
     var aascale = 1.0;
 	if (_aa) {
-        aascale = WebGL_BuildAAScale(_pObject, combinedMat) * GR_SWFAAScale;
+        aascale = WebGL_BuildAAScale(_pObject, combinedMat, false) * GR_SWFAAScale;
     }
     
     var colmul = [],
@@ -1719,7 +1721,7 @@ function WebGL_DrawSWFObject_RELEASE(SWFDictionaryItems, _pObject, _pPostMat, _p
 ///          </summary>
 // #############################################################################################
 function WebGL_Draw_BitmapGradientSWFShape(
-    SWFDictionaryItems, _pObject, _filltype, _pFillStyleData, _pSubShape, _pGradTransMat, _combinedMat, _colvals, _transcolvals, _mulcolour, _colmul, _coladd, _transcoladd, _aa, TPEs) 
+    SWFDictionaryItems, _pObject, _filltype, _pFillStyleData, _pSubShape, _pGradTransMat, _combinedMat, _colvals, _transcolvals, _mulcolour, _colmul, _coladd, _transcoladd, _aa, _aascale, TPEs) 
 {
     var numtris = 0;
     // @if feature("swf")
@@ -1727,12 +1729,7 @@ function WebGL_Draw_BitmapGradientSWFShape(
         pColours,
         pUVs,
         pTPE = null,
-        aascale = 1.0,
         texTransMat = new Matrix();
-
-    if (_aa) {
-        aascale = WebGL_BuildAAScale(_pObject, _combinedMat) * GR_SWFAAScale;
-    }
             
     if (_filltype === eSWFFillType_Gradient)
     {
@@ -1901,11 +1898,11 @@ function WebGL_Draw_BitmapGradientSWFShape(
 		    	    y2 = (srcX2 * _combinedMat.m[_12]) + (srcY2 * _combinedMat.m[_22]) + _combinedMat.m[_42];
 
 		    	// Scale offsets
-		    	srcX3 *= aascale;
-		    	srcY3 *= aascale;
+		    	srcX3 *= _aascale;
+		    	srcY3 *= _aascale;
 
-		    	srcX4 *= aascale;
-		    	srcY4 *= aascale;
+		    	srcX4 *= _aascale;
+		    	srcY4 *= _aascale;
 
 		    	var x3 = (srcX3 * _combinedMat.m[_11]) + (srcY3 * _combinedMat.m[_21]) + x1,
 		    	    y3 = (srcX3 * _combinedMat.m[_12]) + (srcY3 * _combinedMat.m[_22]) + y1,
@@ -2010,13 +2007,9 @@ function WebGL_Draw_BitmapGradientSWFShape(
 ///             Draw a solid SWF shape
 ///          </summary>
 // #############################################################################################
-function WebGL_Draw_SolidSWFShape(_pObject, _pFillStyleData, _pSubShape, _combinedMat, _colvals, _transcolvals, _colmul, _coladd, _transcoladd, _aa) {
+function WebGL_Draw_SolidSWFShape(_pFillStyleData, _pSubShape, _combinedMat, _colvals, _transcolvals, _colmul, _coladd, _transcoladd, _aa, _aascale) {
     var numtris = 0;
     // @if feature("swf")
-    var aascale = 1.0;
-    if (_aa) {
-        aascale = WebGL_BuildAAScale(_pObject, _combinedMat) * GR_SWFAAScale;
-    }
 
     var useTextureWithSolidFill = false;        
 	/*if ((g_ActiveUserShader != NULL) && (g_SolidWhiteTexturePtr != NULL) && (g_SolidWhiteTexturePtr->tex != NULL))
@@ -2116,11 +2109,11 @@ function WebGL_Draw_SolidSWFShape(_pObject, _pFillStyleData, _pSubShape, _combin
 			    y2 = (srcX2 * _combinedMat.m[_12]) + (srcY2 * _combinedMat.m[_22]) + _combinedMat.m[_42];
 
 			// Scale offsets
-			srcX3 *= aascale;
-			srcY3 *= aascale;
+			srcX3 *= _aascale;
+			srcY3 *= _aascale;
 
-			srcX4 *= aascale;
-			srcY4 *= aascale;
+			srcX4 *= _aascale;
+			srcY4 *= _aascale;
 
 			var x3 = (srcX3 * _combinedMat.m[_11]) + (srcY3 * _combinedMat.m[_21]) + x1,
 			    y3 = (srcX3 * _combinedMat.m[_12]) + (srcY3 * _combinedMat.m[_22]) + y1,
@@ -2216,7 +2209,7 @@ function WebGL_DrawVectorSpriteObject_RELEASE(SWFDictionaryItems, _pObject, _pPo
 	    
     var aascale = 1.0;
 	if (_aa) {
-        aascale = WebGL_BuildAAScale(_pObject, _pPostMat) * GR_SWFAAScale;
+        aascale = WebGL_BuildAAScale(_pObject, _pPostMat, true) * GR_SVGAAScale;
     }
     
     var colmul = [],
@@ -2256,7 +2249,7 @@ function WebGL_DrawVectorSprite_RELEASE(SWFDictionary, pObject, xorig, yorig, x,
     var oldZWriteEnable = GR_3DMode;
 	
     // Get colour bytes
-    var mulcolor = (color | ((alpha * 255) & 0xff) << 24);
+    var mulcolor = ((color & 0x00ffffff) | ((alpha * 255) & 0xff) << 24);
 
     var colvals = [];
     colvals[0] = mulcolor & 0xff;
@@ -2265,7 +2258,7 @@ function WebGL_DrawVectorSprite_RELEASE(SWFDictionary, pObject, xorig, yorig, x,
     colvals[3] = (mulcolor >> 24) & 0xff;
 
     // Get zero alpha colour for AA
-	var transmulcolor = color;
+	var transmulcolor = color & 0x00ffffff;
 
 	var transcolvals = [];
 	transcolvals[0] = transmulcolor & 0xff;
@@ -2304,7 +2297,7 @@ function WebGL_DrawVectorSprite_RELEASE(SWFDictionary, pObject, xorig, yorig, x,
     var totaltris = 0,
         allowAA = true;
     
-	totaltris += Graphics_VectorSpriteDrawObject(SWFDictionary, pObject, postMat, gradTransMat, mulcolor, colvals, transmulcolor, transcolvals, allowAA ? GR_SWFAAEnabled : false, TPEs);	    
+	totaltris += Graphics_VectorSpriteDrawObject(SWFDictionary, pObject, postMat, gradTransMat, mulcolor, colvals, transmulcolor, transcolvals, allowAA ? GR_SVGAAEnabled : false, TPEs);	    
 		
     // Restore render states    
     g_webGL.SetStencilEnable(false);
@@ -2318,10 +2311,10 @@ function WebGL_DrawVectorSprite_RELEASE(SWFDictionary, pObject, xorig, yorig, x,
 ///             Draw an SWF at the given index
 ///          </summary>
 // #############################################################################################
-function WebGL_BuildAAScale(_pObject, _combinedMat) {
+function WebGL_BuildAAScale(_pObject, _combinedMat, _isVectorSprite) {
     // @if feature("swf")
     // Work out the AA scaling required
-    if (GR_SWFAAEnabled) {
+    if ((_isVectorSprite && GR_SVGAAEnabled) || (!_isVectorSprite && GR_SWFAAEnabled)) {
     
         // Returned cached answer if it's available
         // UPDATE: this will break if the object is ever drawn at a different scale and there's no simple way to determine when that changes, so ditch this for the moment
